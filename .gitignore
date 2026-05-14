@@ -3,5 +3,5 @@ node_modules/
 dist/
 build/
 instances.json
-brands/
+# brands/ (incluído no repositório para white label)
 certificates/
