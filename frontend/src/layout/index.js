@@ -68,18 +68,20 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
   },
   toolbar: {
-    paddingRight: 24, // keep right padding when drawer closed
+    paddingRight: 24,
     color: theme.palette.dark.main,
     background: theme.palette.barraSuperior,
+    boxShadow: "0 1px 0 rgba(0,0,0,0.08)",
   },
   toolbarIcon: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "0 8px",
-    minHeight: "48px",
+    padding: "0 8px 0 16px",
+    minHeight: "56px",
+    borderBottom: "1px solid #E5E2DA",
     [theme.breakpoints.down("sm")]: {
-      height: "48px"
+      height: "56px"
     }
   },
   appBar: {
@@ -122,6 +124,8 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.down("sm")]: {
       width: "100%"
     },
+    borderRight: "1px solid #E5E2DA",
+    boxShadow: "none",
     ...theme.scrollbarStylesSoft
   },
   drawerPaperClose: {

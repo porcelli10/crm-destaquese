@@ -37,9 +37,7 @@ const useStyles = makeStyles(theme => ({
 	root: {
 		width: "100vw",
 		height: "100vh",
-		//background: "linear-gradient(to right, #682EE3 , #682EE3 , #682EE3)",
-		//backgroundImage: "url(https://i.imgur.com/CGby9tN.png)",
-		backgroundColor: theme.palette.primary.main,
+		backgroundColor: "#F5F3EF",
 		backgroundRepeat: "no-repeat",
 		backgroundSize: "100% 100%",
 		backgroundPosition: "center",
@@ -51,26 +49,32 @@ const useStyles = makeStyles(theme => ({
 		position: "relative"
 	},
 	paper: {
-		backgroundColor: theme.palette.login,
+		backgroundColor: "#FFFFFF",
 		display: "flex",
 		flexDirection: "column",
 		alignItems: "center",
-		padding: "55px 30px",
-		borderRadius: "12.5px",
+		padding: "48px 40px 40px",
+		borderRadius: "4px",
+		borderTop: "4px solid #682EE3",
+		boxShadow: "0 4px 24px rgba(0,0,0,0.09)",
 	},
 	avatar: {
-		margin: theme.spacing(1),  
+		margin: theme.spacing(1),
 		backgroundColor: theme.palette.secondary.main,
 	},
 	form: {
-		width: "100%", // Fix IE 11 issue.
+		width: "100%",
 		marginTop: theme.spacing(1),
 	},
 	submit: {
 		margin: theme.spacing(3, 0, 2),
+		borderRadius: "4px",
+		fontWeight: 600,
+		letterSpacing: "0.5px",
+		padding: "10px 0",
 	},
 	powered: {
-		color: "white"
+		color: "#888"
 	},
 	languageControl: {
 		position: "absolute",
@@ -120,7 +124,7 @@ const Login = () => {
 					aria-haspopup="true"
 					onClick={handlemenuLanguage}
 					variant="contained"
-					style={{ color: "white",marginRight:10 }}
+					style={{ color: "#555", marginRight:10 }}
 				/>
 			</IconButton>
 			<Menu

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useReducer, useState } from "react";
-import { Link as RouterLink, useHistory } from "react-router-dom";
+import { Link as RouterLink, useHistory, useLocation } from "react-router-dom";
 
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
@@ -51,12 +51,44 @@ const useStyles = makeStyles((theme) => ({
     height: 26,
     marginTop: "-15px",
     marginBottom: "-10px",
+    fontSize: "10px",
+    fontWeight: 700,
+    letterSpacing: "1.2px",
+    textTransform: "uppercase",
+    color: "#999",
+  },
+  listItem: {
+    borderLeft: "3px solid transparent",
+    borderRadius: "0 6px 6px 0",
+    margin: "1px 6px 1px 0",
+    paddingLeft: "13px",
+    transition: "background 0.15s ease",
+    "&.Mui-selected": {
+      borderLeft: "3px solid #682EE3",
+      backgroundColor: "rgba(104, 46, 227, 0.07)",
+      "& .MuiListItemIcon-root": {
+        color: "#682EE3",
+      },
+      "& .MuiListItemText-primary": {
+        color: "#682EE3",
+        fontWeight: 600,
+      },
+    },
+    "&.Mui-selected:hover": {
+      backgroundColor: "rgba(104, 46, 227, 0.11)",
+    },
+    "&:hover": {
+      backgroundColor: "rgba(0, 0, 0, 0.04)",
+    },
   },
 }));
 
 
 function ListItemLink(props) {
   const { icon, primary, to, className } = props;
+  const classes = useStyles();
+  const location = useLocation();
+  const isActive = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
 
   const renderLink = React.useMemo(
     () =>
@@ -68,7 +100,13 @@ function ListItemLink(props) {
 
   return (
     <li>
-      <ListItem button dense component={renderLink} className={className}>
+      <ListItem
+        button
+        dense
+        component={renderLink}
+        className={`${classes.listItem}${className ? ` ${className}` : ""}`}
+        selected={isActive}
+      >
         {icon ? <ListItemIcon>{icon}</ListItemIcon> : null}
         <ListItemText primary={primary} />
       </ListItem>
@@ -359,11 +397,16 @@ const MainListItems = (props) => {
               hidden={collapsed}
               style={{
                 position: "relative",
-                fontSize: "17px",
+                fontSize: "10px",
+                fontWeight: 700,
+                letterSpacing: "1.2px",
+                textTransform: "uppercase",
+                color: "#999",
                 textAlign: "left",
-                paddingLeft: 20
+                paddingLeft: 16,
+                marginTop: 4,
+                marginBottom: 2,
               }}
-              inset
               color="inherit">
               {i18n.t("mainDrawer.listItems.administration")}
             </ListSubheader>
