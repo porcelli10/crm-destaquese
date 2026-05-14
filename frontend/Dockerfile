@@ -2,6 +2,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+RUN apk add --no-cache bash
+
 # Install serve globally
 RUN npm install -g serve
 
