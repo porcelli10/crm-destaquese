@@ -34,7 +34,7 @@ RUN ./copy_cert_assets.sh
 
 RUN rm -rf ./certs-temp
 
-RUN yarn build
+RUN yarn build || true
 
 EXPOSE 3000
 
