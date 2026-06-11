@@ -27,7 +27,13 @@ interface Request {
   timeUseBotQueues?: number;
   expiresTicket?: number;
   expiresInactiveMessage?: string;
-  integrationId?: number
+  integrationId?: number;
+  channel?: string;
+  officialWabaId?: string;
+  officialPhoneNumberId?: string;
+  officialAccessToken?: string;
+  officialVerifyToken?: string;
+  officialApiVersion?: string;
 }
 
 interface Response {
@@ -56,7 +62,13 @@ const CreateWhatsAppService = async ({
   timeUseBotQueues = 0,
   expiresTicket = 0,
   expiresInactiveMessage = "",
-  integrationId = null
+  integrationId = null,
+  channel = "baileys",
+  officialWabaId = null,
+  officialPhoneNumberId = null,
+  officialAccessToken = null,
+  officialVerifyToken = null,
+  officialApiVersion = "v21.0"
 }: Request): Promise<Response> => {
 
   const company = await Company.findOne({
@@ -169,7 +181,13 @@ const CreateWhatsAppService = async ({
       timeUseBotQueues,
       expiresTicket,
       expiresInactiveMessage,
-      integrationId
+      integrationId,
+      channel,
+      officialWabaId,
+      officialPhoneNumberId,
+      officialAccessToken,
+      officialVerifyToken,
+      officialApiVersion
     },
     { include: ["queues"] }
   );

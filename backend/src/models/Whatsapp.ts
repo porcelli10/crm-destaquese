@@ -76,6 +76,28 @@ class Whatsapp extends Model<Whatsapp> {
   @Column({ defaultValue: "stable" })
   provider: string;
 
+  // Canal da conexão: "baileys" (não-oficial, padrão) ou "official" (Meta Cloud API)
+  @Default("baileys")
+  @Column
+  channel: string;
+
+  // Credenciais da API Oficial (Meta Cloud API) — usadas quando channel === "official"
+  @Column
+  officialWabaId: string;
+
+  @Column
+  officialPhoneNumberId: string;
+
+  @Column(DataType.TEXT)
+  officialAccessToken: string;
+
+  @Column
+  officialVerifyToken: string;
+
+  @Default("v21.0")
+  @Column
+  officialApiVersion: string;
+
   @Default(false)
   @AllowNull
   @Column

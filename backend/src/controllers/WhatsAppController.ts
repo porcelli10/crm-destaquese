@@ -29,7 +29,13 @@ interface WhatsappData {
   timeUseBotQueues?: number;
   expiresTicket?: number;
   expiresInactiveMessage?: string;
-  integrationId?: number
+  integrationId?: number;
+  channel?: string;
+  officialWabaId?: string;
+  officialPhoneNumberId?: string;
+  officialAccessToken?: string;
+  officialVerifyToken?: string;
+  officialApiVersion?: string;
 }
 
 interface QueryParams {
@@ -63,7 +69,13 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     timeUseBotQueues,
     expiresTicket,
     expiresInactiveMessage,
-    integrationId
+    integrationId,
+    channel,
+    officialWabaId,
+    officialPhoneNumberId,
+    officialAccessToken,
+    officialVerifyToken,
+    officialApiVersion
   }: WhatsappData = req.body;
   const { companyId } = req.user;
 
@@ -80,13 +92,19 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     //timeSendQueue,
     //sendIdQueue,
 	  transferQueueId,
-	  timeToTransfer,	
+	  timeToTransfer,
     promptId,
     maxUseBotQueues,
     timeUseBotQueues,
     expiresTicket,
     expiresInactiveMessage,
-    integrationId
+    integrationId,
+    channel,
+    officialWabaId,
+    officialPhoneNumberId,
+    officialAccessToken,
+    officialVerifyToken,
+    officialApiVersion
   });
 
   StartWhatsAppSession(whatsapp, companyId);

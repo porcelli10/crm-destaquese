@@ -7,6 +7,7 @@ import Message from "../../models/Message";
 import Ticket from "../../models/Ticket";
 
 import formatBody from "../../helpers/Mustache";
+import SendTextMessageOfficial from "../WABAServices/SendTextMessageOfficial";
 
 interface Request {
   body: string;
@@ -19,6 +20,12 @@ const SendWhatsAppMessage = async ({
   ticket,
   quotedMsg
 }: Request): Promise<WAMessage> => {
+  // Canal oficial (Meta Cloud API): envia via Graph API e persiste localmente
+  if (ticket.whatsapp?.channel === "official") {
+    await SendTextMessageOfficial({ body, ticket });
+    return {} as WAMessage;
+  }
+
   let options = {};
   const wbot = await GetTicketWbot(ticket);
   const number = `${ticket.contact.number}@${

@@ -33,7 +33,10 @@ const ShowTicketService = async (
       {
         model: Whatsapp,
         as: "whatsapp",
-        attributes: ["name"]
+        // NÃO incluir campos sensíveis (officialAccessToken etc.): os serviços
+        // oficiais recarregam a conexão completa por id. "channel" basta para
+        // o roteamento de envio (Baileys vs Meta Cloud API).
+        attributes: ["id", "name", "channel", "integrationId"]
       },
       {
         model: Tag,

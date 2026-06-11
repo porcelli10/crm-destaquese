@@ -34,6 +34,9 @@ import forgotsRoutes from "./forgotPasswordRoutes";
 import flowDefaultRoutes from "./flowDefaultRoutes";
 import flowBuilder from "./flowBuilderRoutes";
 import flowCampaignRoutes from "./flowCampaignRoutes";
+import officialWebhookRoutes from "./officialWebhookRoutes";
+import officialTemplateRoutes from "./officialTemplateRoutes";
+import embeddedSignupRoutes from "./embeddedSignupRoutes";
 const routes = Router();
 
 routes.use(userRoutes);
@@ -72,5 +75,10 @@ routes.use(forgotsRoutes);
 routes.use(flowDefaultRoutes);
 routes.use(flowBuilder)
 routes.use(flowCampaignRoutes)
+
+// WhatsApp API Oficial (Meta Cloud API)
+routes.use("/webhooks", officialWebhookRoutes); // Callback URL da Meta
+routes.use(officialTemplateRoutes);             // message templates
+routes.use(embeddedSignupRoutes);               // Embedded Signup (FB Login for Business)
 
 export default routes;

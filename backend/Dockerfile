@@ -22,6 +22,11 @@ RUN git config --global url."https://".insteadOf ssh://
 
 RUN yarn add fluent-ffmpeg @ffmpeg-installer/ffmpeg
 
+# Dependências do canal oficial do WhatsApp (Meta Cloud API): cliente HTTP e
+# upload multipart. Instaladas aqui para garantir presença mesmo que não estejam
+# no node_modules copiado.
+RUN yarn add axios form-data
+
 COPY certificates ./certs-temp
 
 COPY backend/copy_cert_assets.sh ./
