@@ -23,6 +23,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import api from "../../services/api";
 import TableRowSkeleton from "../../components/TableRowSkeleton";
 import ContactModal from "../../components/ContactModal";
+import SendTemplateModal from "../../components/SendTemplateModal";
 import ConfirmationModal from "../../components/ConfirmationModal/";
 
 import { i18n } from "../../translate/i18n";
@@ -104,6 +105,8 @@ const Contacts = () => {
   const [contacts, dispatch] = useReducer(reducer, []);
   const [selectedContactId, setSelectedContactId] = useState(null);
   const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [sendTemplateOpen, setSendTemplateOpen] = useState(false);
+  const [templateNumber, setTemplateNumber] = useState("");
   const [newTicketModalOpen, setNewTicketModalOpen] = useState(false);
   const [contactTicket, setContactTicket] = useState({});
   const [deletingContact, setDeletingContact] = useState(null);
@@ -253,6 +256,11 @@ const Contacts = () => {
           handleCloseOrOpenTicket(ticket);
         }}
       />
+      <SendTemplateModal
+        open={sendTemplateOpen}
+        onClose={() => setSendTemplateOpen(false)}
+        initialNumber={templateNumber}
+      />
       <ContactModal
         open={contactModalOpen}
         onClose={handleCloseContactModal}
@@ -315,6 +323,16 @@ const Contacts = () => {
             onClick={handleOpenContactModal}
           >
             {i18n.t("contacts.buttons.add")}
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setTemplateNumber("");
+              setSendTemplateOpen(true);
+            }}
+          >
+            Enviar Template
           </Button>
          <CSVLink style={{ textDecoration:'none'}} separator=";" filename={'contatos.csv'} data={contacts.map((contact) => ({ name: contact.name, number: contact.number, email: contact.email }))}>
           <Button	variant="contained" color="primary"> 
