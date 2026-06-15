@@ -42,6 +42,10 @@ const useStyles = makeStyles(theme => ({
 		from: { opacity: 0, transform: "translateY(14px)" },
 		to: { opacity: 1, transform: "translateY(0)" },
 	},
+	"@keyframes driftGrid": {
+		from: { backgroundPosition: "0px 0px" },
+		to: { backgroundPosition: "26px 26px" },
+	},
 	root: {
 		width: "100vw",
 		height: "100vh",
@@ -52,6 +56,20 @@ const useStyles = makeStyles(theme => ({
 		justifyContent: "center",
 		textAlign: "center",
 		position: "relative",
+		overflow: "hidden",
+		"&::before": {
+			content: '""',
+			position: "absolute",
+			top: "-30px",
+			left: "-30px",
+			right: "-30px",
+			bottom: "-30px",
+			backgroundImage: "radial-gradient(rgba(104,46,227,0.10) 1.6px, transparent 1.6px)",
+			backgroundSize: "26px 26px",
+			animation: "$driftGrid 7s linear infinite",
+			pointerEvents: "none",
+			zIndex: 0,
+		},
 	},
 	paper: {
 		backgroundColor: "#FFFFFF",
@@ -145,6 +163,7 @@ const useStyles = makeStyles(theme => ({
 		top: 0,
 		left: 0,
 		paddingLeft: 15,
+		zIndex: 2,
 	}
 }));
 
@@ -211,7 +230,7 @@ const Login = () => {
 				</MenuItem>
 			</Menu>
 		</div>
-		<Container component="main" maxWidth="xs">
+		<Container component="main" maxWidth="xs" style={{ position: "relative", zIndex: 1 }}>
 			<CssBaseline/>
 			<div className={classes.paper}>
 				<div className={classes.logoWrapper}>
