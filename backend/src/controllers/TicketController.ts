@@ -9,6 +9,7 @@ import ShowTicketUUIDService from "../services/TicketServices/ShowTicketFromUUID
 import ShowTicketService from "../services/TicketServices/ShowTicketService";
 import UpdateTicketService from "../services/TicketServices/UpdateTicketService";
 import ListTicketsServiceKanban from "../services/TicketServices/ListTicketsServiceKanban";
+import CreateKanbanCardService from "../services/TicketServices/CreateKanbanCardService";
 
 type IndexQuery = {
   searchParam: string;
@@ -105,6 +106,38 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     ticket
   });
   return res.status(200).json(ticket);
+};
+
+// Cria manualmente um card do Kanban (contato + atendimento + tag da coluna)
+export const kanbanCard = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { name, number, tagId } = req.body as {
+    name: string;
+    number: string;
+    tagId?: number;
+  };
+  const { companyId } = req.user;
+
+  const { ticket, contact } = await CreateKanbanCardService({
+    name,
+    number,
+    tagId,
+    companyId
+  });
+
+  const io = getIO();
+  io.to(`company-${companyId}-mainchannel`).emit(`company-${companyId}-ticket`, {
+    action: "update",
+    ticket
+  });
+
+  return res.status(200).json({
+    ticketId: ticket.id,
+    uuid: ticket.uuid,
+    contact: { id: contact.id, name: contact.name, number: contact.number }
+  });
 };
 
 export const kanban = async (req: Request, res: Response): Promise<Response> => {

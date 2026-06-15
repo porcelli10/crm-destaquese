@@ -15,6 +15,8 @@ ticketRoutes.get("/tickets/u/:uuid", isAuth, TicketController.showFromUUID);
 
 ticketRoutes.post("/tickets", isAuth, TicketController.store);
 
+ticketRoutes.post("/kanban/cards", isAuth, TicketController.kanbanCard);
+
 ticketRoutes.put("/tickets/:ticketId", isAuth, TicketController.update);
 
 ticketRoutes.delete("/tickets/:ticketId", isAuth, TicketController.remove);
