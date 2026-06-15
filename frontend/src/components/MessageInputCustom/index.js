@@ -62,8 +62,14 @@ const useStyles = makeStyles((theme) => ({
     marginRight: 7,
     backgroundColor: theme.palette.inputdigita, //DARK MODE PLW DESIGN//
     display: "flex",
-    borderRadius: 20,
+    borderRadius: 12,
+    border: theme.palette.type === "light" ? "1px solid #E5E2DA" : "1px solid #444",
     flex: 1,
+    transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+    "&:focus-within": {
+      borderColor: "#682EE3",
+      boxShadow: "0 0 0 3px rgba(104,46,227,0.12)",
+    },
   },
 
   messageInput: {
