@@ -31,6 +31,83 @@ const App = () => {
 
     const theme = createTheme(
         {
+            shape: {
+                borderRadius: 10,
+            },
+            typography: {
+                fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+                button: {
+                    textTransform: "none",
+                    fontWeight: 600,
+                },
+                h6: { fontWeight: 600 },
+            },
+            props: {
+                MuiButton: { disableElevation: true },
+                MuiAppBar: { elevation: 0 },
+            },
+            overrides: {
+                MuiButton: {
+                    root: {
+                        borderRadius: 10,
+                        padding: "7px 18px",
+                    },
+                    contained: {
+                        boxShadow: "none",
+                        "&:hover": {
+                            boxShadow: "0 6px 16px rgba(104,46,227,0.25)",
+                        },
+                    },
+                },
+                MuiPaper: {
+                    rounded: {
+                        borderRadius: 14,
+                    },
+                    outlined: {
+                        border: mode === "light" ? "1px solid #E5E2DA" : "1px solid #333",
+                    },
+                },
+                MuiCard: {
+                    root: {
+                        borderRadius: 14,
+                        border: mode === "light" ? "1px solid #E5E2DA" : "1px solid #333",
+                        boxShadow: mode === "light"
+                            ? "0 2px 10px rgba(0,0,0,0.05)"
+                            : "none",
+                    },
+                },
+                MuiOutlinedInput: {
+                    root: {
+                        borderRadius: 10,
+                    },
+                },
+                MuiDialog: {
+                    paper: {
+                        borderRadius: 16,
+                    },
+                },
+                MuiTableHead: {
+                    root: {
+                        "& .MuiTableCell-head": {
+                            fontWeight: 700,
+                            color: mode === "light" ? "#3A3A42" : "#F3F3F3",
+                            backgroundColor: mode === "light" ? "#F5F3EF" : "#2A2A3A",
+                        },
+                    },
+                },
+                MuiChip: {
+                    root: {
+                        borderRadius: 8,
+                        fontWeight: 500,
+                    },
+                },
+                MuiTab: {
+                    root: {
+                        textTransform: "none",
+                        fontWeight: 600,
+                    },
+                },
+            },
             scrollbarStyles: {
                 "&::-webkit-scrollbar": {
                     width: '6px',

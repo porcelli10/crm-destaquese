@@ -79,7 +79,8 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "space-between",
     padding: "0 8px 0 16px",
     minHeight: "56px",
-    borderBottom: "1px solid #E5E2DA",
+    background: "linear-gradient(135deg, #7C3AED 0%, #682EE3 100%)",
+    borderBottom: "1px solid rgba(255,255,255,0.12)",
     [theme.breakpoints.down("sm")]: {
       height: "56px"
     }
@@ -367,7 +368,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
         <div className={classes.toolbarIcon}>
           <img src={logo} className={classes.logo} alt="logo" />
           <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
-            <ChevronLeftIcon />
+            <ChevronLeftIcon style={{ color: "#FFFFFF" }} />
           </IconButton>
         </div>
         <Divider />
