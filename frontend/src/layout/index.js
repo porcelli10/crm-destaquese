@@ -70,8 +70,10 @@ const useStyles = makeStyles((theme) => ({
   toolbar: {
     paddingRight: 24,
     color: theme.palette.dark.main,
-    background: theme.palette.barraSuperior,
-    boxShadow: "0 1px 0 rgba(0,0,0,0.08)",
+    background: theme.mode === "light"
+      ? "linear-gradient(135deg, #7C3AED 0%, #682EE3 100%)"
+      : theme.palette.barraSuperior,
+    boxShadow: "0 2px 12px rgba(104,46,227,0.18)",
   },
   toolbarIcon: {
     display: "flex",

@@ -203,6 +203,47 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     overflow: "auto",
     flexDirection: "column",
+    borderRadius: 14,
+    border: theme.palette.type === "dark" ? "1px solid #333" : "1px solid #E5E2DA",
+  },
+  metricPaper: {
+    padding: theme.spacing(2.5),
+    display: "flex",
+    alignItems: "center",
+    height: "100%",
+    borderRadius: 14,
+    border: theme.palette.type === "dark" ? "1px solid #333" : "1px solid #E5E2DA",
+    backgroundColor: theme.palette.type === "dark" ? "#2A2A3A" : "#FFFFFF",
+    boxShadow: theme.palette.type === "dark" ? "none" : "0 2px 12px rgba(0,0,0,0.05)",
+    transition: "transform 0.15s ease, box-shadow 0.2s ease",
+    "&:hover": {
+      transform: "translateY(-3px)",
+      boxShadow: theme.palette.type === "dark"
+        ? "0 6px 18px rgba(0,0,0,0.4)"
+        : "0 8px 22px rgba(0,0,0,0.10)",
+    },
+  },
+  iconBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    marginRight: 16,
+  },
+  metricLabel: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: theme.palette.type === "dark" ? "#BBB" : "#6B6B72",
+    marginBottom: 4,
+  },
+  metricValue: {
+    fontSize: 28,
+    fontWeight: 700,
+    lineHeight: 1.1,
+    color: theme.palette.type === "dark" ? "#FFF" : "#2A2A33",
   },
 }));
 
@@ -291,6 +332,20 @@ const Dashboard = () => {
       .format("HH[h] mm[m]");
   }
 
+  const MetricCard = ({ label, value, icon, color }) => (
+    <Grid item xs={12} sm={6} md={4}>
+      <Paper className={classes.metricPaper} elevation={0}>
+        <div className={classes.iconBadge} style={{ backgroundColor: `${color}1A` }}>
+          {React.cloneElement(icon, { style: { fontSize: 30, color } })}
+        </div>
+        <div>
+          <Typography className={classes.metricLabel}>{label}</Typography>
+          <Typography className={classes.metricValue}>{value}</Typography>
+        </div>
+      </Paper>
+    </Grid>
+  );
+
     const GetContacts = (all) => {
     let props = {};
     if (all) {
@@ -365,78 +420,20 @@ const Dashboard = () => {
 		
 
           {/* EM ATENDIMENTO */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper
-              className={classes.card1}
-              style={{ overflow: "hidden" }}
-              elevation={4}
-            >
-              <Grid container spacing={3}>
-                <Grid item xs={8}>
-                  <Typography
-                    component="h3"
-                    variant="h6"
-                    paragraph
-                  >
-                    {i18n.t("dashboard.counters.inTalk")}
-                  </Typography>
-                  <Grid item>
-                    <Typography
-                      component="h1"
-                      variant="h4"
-                    >
-                      {counters.supportHappening}
-                    </Typography>
-                  </Grid>
-                </Grid>
-                <Grid item xs={2}>
-                  <CallIcon
-                    style={{
-                      fontSize: 100,
-                      color: "#FFFFFF",
-                    }}
-                  />
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
+          <MetricCard
+            label={i18n.t("dashboard.counters.inTalk")}
+            value={counters.supportHappening}
+            icon={<CallIcon />}
+            color="#682EE3"
+          />
 
           {/* AGUARDANDO */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper
-              className={classes.card2}
-              style={{ overflow: "hidden" }}
-              elevation={6}
-            >
-              <Grid container spacing={3}>
-                <Grid item xs={8}>
-                  <Typography
-                    component="h3"
-                    variant="h6"
-                    paragraph
-                  >
-                    {i18n.t("dashboard.counters.waiting")}
-                  </Typography>
-                  <Grid item>
-                    <Typography
-                      component="h1"
-                      variant="h4"
-                    >
-                      {counters.supportPending}
-                    </Typography>
-                  </Grid>
-                </Grid>
-                <Grid item xs={4}>
-                  <HourglassEmptyIcon
-                    style={{
-                      fontSize: 100,
-                      color: "#FFFFFF",
-                    }}
-                  />
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
+          <MetricCard
+            label={i18n.t("dashboard.counters.waiting")}
+            value={counters.supportPending}
+            icon={<HourglassEmptyIcon />}
+            color="#F59E0B"
+          />
 
           {/* ATENDENTES ATIVOS */}
 			  {/*<Grid item xs={12} sm={6} md={4}>
@@ -481,153 +478,37 @@ const Dashboard = () => {
 </Grid>*/}
 
           {/* FINALIZADOS */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper
-              className={classes.card3}
-              style={{ overflow: "hidden" }}
-              elevation={6}
-            >
-              <Grid container spacing={3}>
-                <Grid item xs={8}>
-                  <Typography
-                    component="h3"
-                    variant="h6"
-                    paragraph
-                  >
-                    {i18n.t("dashboard.counters.finished")}
-                  </Typography>
-                  <Grid item>
-                    <Typography
-                      component="h1"
-                      variant="h4"
-                    >
-                      {counters.supportFinished}
-                    </Typography>
-                  </Grid>
-                </Grid>
-                <Grid item xs={4}>
-                  <CheckCircleIcon
-                    style={{
-                      fontSize: 100,
-                      color: "#FFFFFF",
-                    }}
-                  />
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
+          <MetricCard
+            label={i18n.t("dashboard.counters.finished")}
+            value={counters.supportFinished}
+            icon={<CheckCircleIcon />}
+            color="#10B981"
+          />
 
           {/* NOVOS CONTATOS */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper
-              className={classes.card4}
-              style={{ overflow: "hidden" }}
-              elevation={6}
-            >
-              <Grid container spacing={3}>
-                <Grid item xs={8}>
-                  <Typography
-                    component="h3"
-                    variant="h6"
-                    paragraph
-                  >
-                    {i18n.t("dashboard.counters.newContacts")}
-                  </Typography>
-                  <Grid item>
-                    <Typography
-                      component="h1"
-                      variant="h4"
-                    >
-                      {GetContacts(true)}
-                    </Typography>
-                  </Grid>
-                </Grid>
-                <Grid item xs={4}>
-                  <GroupAddIcon
-                    style={{
-                      fontSize: 100,
-                      color: "#FFFFFF",
-                    }}
-                  />
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
+          <MetricCard
+            label={i18n.t("dashboard.counters.newContacts")}
+            value={GetContacts(true)}
+            icon={<GroupAddIcon />}
+            color="#3B82F6"
+          />
 
           
           {/* T.M. DE ATENDIMENTO */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper
-              className={classes.card8}
-              style={{ overflow: "hidden" }}
-              elevation={6}
-            >
-              <Grid container spacing={3}>
-                <Grid item xs={8}>
-                  <Typography
-                    component="h3"
-                    variant="h6"
-                    paragraph
-                  >
-                    {i18n.t("dashboard.counters.averageTalkTime")}
-                  </Typography>
-                  <Grid item>
-                    <Typography
-                      component="h1"
-                      variant="h4"
-                    >
-                      {formatTime(counters.avgSupportTime)}
-                    </Typography>
-                  </Grid>
-                </Grid>
-                <Grid item xs={4}>
-                  <AccessAlarmIcon
-                    style={{
-                      fontSize: 100,
-                      color: "#FFFFFF",
-                    }}
-                  />
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
+          <MetricCard
+            label={i18n.t("dashboard.counters.averageTalkTime")}
+            value={formatTime(counters.avgSupportTime)}
+            icon={<AccessAlarmIcon />}
+            color="#8B5CF6"
+          />
 
           {/* T.M. DE ESPERA */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper
-              className={classes.card9}
-              style={{ overflow: "hidden" }}
-              elevation={6}
-            >
-              <Grid container spacing={3}>
-                <Grid item xs={8}>
-                  <Typography
-                    component="h3"
-                    variant="h6"
-                    paragraph
-                  >
-                    {i18n.t("dashboard.counters.averageWaitTime")}
-                  </Typography>
-                  <Grid item>
-                    <Typography
-                      component="h1"
-                      variant="h4"
-                    >
-                      {formatTime(counters.avgWaitTime)}
-                    </Typography>
-                  </Grid>
-                </Grid>
-                <Grid item xs={4}>
-                  <TimerIcon
-                    style={{
-                      fontSize: 100,
-                      color: "#FFFFFF",
-                    }}
-                  />
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
+          <MetricCard
+            label={i18n.t("dashboard.counters.averageWaitTime")}
+            value={formatTime(counters.avgWaitTime)}
+            icon={<TimerIcon />}
+            color="#EF4444"
+          />
 		  
 		  {/* FILTROS */}
           <Grid item xs={12} sm={6} md={4}>
