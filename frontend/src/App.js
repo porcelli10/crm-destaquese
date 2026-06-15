@@ -55,7 +55,7 @@ const App = () => {
                     contained: {
                         boxShadow: "none",
                         "&:hover": {
-                            boxShadow: "0 6px 16px rgba(104,46,227,0.25)",
+                            boxShadow: "none",
                         },
                     },
                 },

@@ -34,25 +34,6 @@ const Copyright = () => {
  };
 
 const useStyles = makeStyles(theme => ({
-	"@keyframes floatA": {
-		"0%":   { transform: "translate(0px, 0px) scale(1)" },
-		"50%":  { transform: "translate(50px, -60px) scale(1.1)" },
-		"100%": { transform: "translate(0px, 0px) scale(1)" },
-	},
-	"@keyframes floatB": {
-		"0%":   { transform: "translate(0px, 0px) scale(1)" },
-		"50%":  { transform: "translate(-55px, 45px) scale(1.15)" },
-		"100%": { transform: "translate(0px, 0px) scale(1)" },
-	},
-	"@keyframes floatC": {
-		"0%":   { transform: "translate(0px, 0px) scale(1)" },
-		"50%":  { transform: "translate(40px, 50px) scale(0.9)" },
-		"100%": { transform: "translate(0px, 0px) scale(1)" },
-	},
-	"@keyframes cardIn": {
-		"0%":   { opacity: 0, transform: "translateY(24px)" },
-		"100%": { opacity: 1, transform: "translateY(0)" },
-	},
 	root: {
 		width: "100vw",
 		height: "100vh",
@@ -63,113 +44,59 @@ const useStyles = makeStyles(theme => ({
 		justifyContent: "center",
 		textAlign: "center",
 		position: "relative",
-		overflow: "hidden",
-	},
-	// Fundo animado — orbs roxos suaves (efeito aurora)
-	blob: {
-		position: "absolute",
-		borderRadius: "50%",
-		filter: "blur(60px)",
-		opacity: 0.55,
-		pointerEvents: "none",
-		zIndex: 0,
-	},
-	blobA: {
-		width: 420,
-		height: 420,
-		top: "-120px",
-		left: "-100px",
-		background: "radial-gradient(circle at 30% 30%, #8B5CF6 0%, #682EE3 70%)",
-		animation: "$floatA 8s ease-in-out infinite",
-	},
-	blobB: {
-		width: 360,
-		height: 360,
-		bottom: "-110px",
-		right: "-80px",
-		background: "radial-gradient(circle at 30% 30%, #A78BFA 0%, #682EE3 75%)",
-		animation: "$floatB 10s ease-in-out infinite",
-	},
-	blobC: {
-		width: 300,
-		height: 300,
-		top: "55%",
-		left: "8%",
-		background: "radial-gradient(circle at 30% 30%, #C4B5FD 0%, #7C3AED 80%)",
-		opacity: 0.35,
-		animation: "$floatC 12s ease-in-out infinite",
-	},
-	container: {
-		position: "relative",
-		zIndex: 1,
 	},
 	paper: {
 		backgroundColor: "#FFFFFF",
 		display: "flex",
 		flexDirection: "column",
 		alignItems: "center",
-		padding: "48px 40px 40px",
-		borderRadius: "16px",
+		padding: "44px 40px 36px",
+		borderRadius: "12px",
+		border: "1px solid #E5E2DA",
 		borderTop: "4px solid #682EE3",
-		boxShadow: "0 18px 50px rgba(104,46,227,0.18), 0 4px 16px rgba(0,0,0,0.06)",
-		animation: "$cardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both",
+		boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
 	},
-	avatar: {
-		margin: theme.spacing(1),
-		backgroundColor: theme.palette.secondary.main,
-	},
-	// Painel roxo atras da logo (a logo da empresa e branca)
+	// Painel da logo (a logo da empresa e branca) — cor de acento chapada
 	logoWrapper: {
 		width: "100%",
-		background: "linear-gradient(135deg, #7C3AED 0%, #682EE3 100%)",
-		borderRadius: 16,
-		padding: "22px 24px",
-		marginBottom: 8,
+		backgroundColor: "#682EE3",
+		borderRadius: 10,
+		padding: "20px 24px",
+		marginBottom: 10,
 		display: "flex",
 		justifyContent: "center",
 		alignItems: "center",
-		boxShadow: "0 8px 22px rgba(104,46,227,0.28)",
 	},
 	logoImg: {
-		width: "72%",
+		width: "70%",
 		display: "block",
 	},
 	form: {
 		width: "100%",
-		marginTop: theme.spacing(2),
-		// Campos de email/senha mais bonitos
+		marginTop: theme.spacing(1),
 		"& .MuiOutlinedInput-root": {
-			borderRadius: 12,
+			borderRadius: 10,
 			backgroundColor: "#FFFFFF",
-			transition: "box-shadow 0.2s ease, border-color 0.2s ease",
 			"& fieldset": {
 				borderColor: "#D8D4CC",
-				transition: "border-color 0.2s ease",
 			},
 			"&:hover fieldset": {
-				borderColor: "#B9A9F0",
-			},
-			"&.Mui-focused": {
-				boxShadow: "0 0 0 4px rgba(104,46,227,0.15)",
+				borderColor: "#B9B3A6",
 			},
 			"&.Mui-focused fieldset": {
 				borderColor: "#682EE3",
-				borderWidth: 2,
 			},
 		},
-		// Texto digitado escuro e legivel
 		"& .MuiOutlinedInput-input": {
 			color: "#2A2A33",
 		},
-		// Corrige o fundo azulado do autofill do navegador
 		"& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus": {
 			WebkitBoxShadow: "0 0 0 1000px #FFFFFF inset",
 			WebkitTextFillColor: "#2A2A33",
 			caretColor: "#2A2A33",
-			borderRadius: 12,
+			borderRadius: 10,
 			transition: "background-color 9999s ease-in-out 0s",
 		},
-		// Legenda (email/senha) com contraste legivel
 		"& .MuiInputLabel-root": {
 			color: "#6B6B72",
 		},
@@ -179,19 +106,16 @@ const useStyles = makeStyles(theme => ({
 	},
 	submit: {
 		margin: theme.spacing(3, 0, 2),
-		borderRadius: 12,
+		borderRadius: 10,
 		fontWeight: 600,
-		letterSpacing: "0.5px",
-		padding: "12px 0",
-		textTransform: "none",
-		fontSize: "1rem",
-		background: "linear-gradient(135deg, #7C3AED 0%, #682EE3 100%)",
-		boxShadow: "0 8px 20px rgba(104,46,227,0.30)",
-		transition: "transform 0.15s ease, box-shadow 0.2s ease",
+		padding: "11px 0",
+		fontSize: "0.95rem",
+		backgroundColor: "#682EE3",
+		color: "#FFFFFF",
+		boxShadow: "none",
 		"&:hover": {
-			background: "linear-gradient(135deg, #6D28D9 0%, #5B21B6 100%)",
-			boxShadow: "0 12px 26px rgba(104,46,227,0.40)",
-			transform: "translateY(-2px)",
+			backgroundColor: "#5A27C7",
+			boxShadow: "none",
 		},
 	},
 	powered: {
@@ -202,7 +126,6 @@ const useStyles = makeStyles(theme => ({
 		top: 0,
 		left: 0,
 		paddingLeft: 15,
-		zIndex: 2,
 	}
 }));
 
@@ -238,11 +161,6 @@ const Login = () => {
 
 	return (
 		<div className={classes.root}>
-		{/* Fundo animado */}
-		<div className={`${classes.blob} ${classes.blobA}`} />
-		<div className={`${classes.blob} ${classes.blobB}`} />
-		<div className={`${classes.blob} ${classes.blobC}`} />
-
 		<div className={classes.languageControl}>
 			<IconButton edge="start">
 				<LanguageOutlined
@@ -274,15 +192,12 @@ const Login = () => {
 				</MenuItem>
 			</Menu>
 		</div>
-		<Container className={classes.container} component="main" maxWidth="xs">
+		<Container component="main" maxWidth="xs">
 			<CssBaseline/>
 			<div className={classes.paper}>
 				<div className={classes.logoWrapper}>
 					<img className={classes.logoImg} src={logo} alt="Logo" />
 				</div>
-				{/*<Typography component="h1" variant="h5">
-					{i18n.t("login.title")}
-				</Typography>*/}
 				<form className={classes.form} noValidate onSubmit={handlSubmit}>
 					<TextField
 						variant="outlined"
@@ -310,15 +225,6 @@ const Login = () => {
 						onChange={handleChangeInput}
 						autoComplete="current-password"
 					/>
-
-					{/* <Grid container justify="flex-end">
-					  <Grid item xs={6} style={{ textAlign: "right" }}>
-						<Link component={RouterLink} to="/forgetpsw" variant="body2">
-						  Esqueceu sua senha?
-						</Link>
-					  </Grid>
-					</Grid>*/}
-
 					<Button
 						type="submit"
 						fullWidth
@@ -341,7 +247,6 @@ const Login = () => {
 						</Grid>
 					</Grid> }
 				</form>
-
 			</div>
 			<Box mt={8}><Copyright /></Box>
 		</Container>

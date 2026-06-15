@@ -70,10 +70,8 @@ const useStyles = makeStyles((theme) => ({
   toolbar: {
     paddingRight: 24,
     color: theme.palette.dark.main,
-    background: theme.mode === "light"
-      ? "linear-gradient(135deg, #7C3AED 0%, #682EE3 100%)"
-      : theme.palette.barraSuperior,
-    boxShadow: "0 2px 12px rgba(104,46,227,0.18)",
+    background: theme.palette.barraSuperior,
+    boxShadow: "0 1px 0 rgba(0,0,0,0.08)",
   },
   toolbarIcon: {
     display: "flex",
@@ -81,7 +79,7 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "space-between",
     padding: "0 8px 0 16px",
     minHeight: "56px",
-    background: "linear-gradient(135deg, #7C3AED 0%, #682EE3 100%)",
+    background: "#682EE3",
     borderBottom: "1px solid rgba(255,255,255,0.12)",
     [theme.breakpoints.down("sm")]: {
       height: "56px"

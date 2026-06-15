@@ -214,13 +214,10 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 14,
     border: theme.palette.type === "dark" ? "1px solid #333" : "1px solid #E5E2DA",
     backgroundColor: theme.palette.type === "dark" ? "#2A2A3A" : "#FFFFFF",
-    boxShadow: theme.palette.type === "dark" ? "none" : "0 2px 12px rgba(0,0,0,0.05)",
-    transition: "transform 0.15s ease, box-shadow 0.2s ease",
+    boxShadow: theme.palette.type === "dark" ? "none" : "0 1px 4px rgba(0,0,0,0.04)",
+    transition: "border-color 0.15s ease",
     "&:hover": {
-      transform: "translateY(-3px)",
-      boxShadow: theme.palette.type === "dark"
-        ? "0 6px 18px rgba(0,0,0,0.4)"
-        : "0 8px 22px rgba(0,0,0,0.10)",
+      borderColor: "#C9BEF2",
     },
   },
   iconBadge: {
@@ -432,7 +429,7 @@ const Dashboard = () => {
             label={i18n.t("dashboard.counters.waiting")}
             value={counters.supportPending}
             icon={<HourglassEmptyIcon />}
-            color="#F59E0B"
+            color="#682EE3"
           />
 
           {/* ATENDENTES ATIVOS */}
@@ -482,7 +479,7 @@ const Dashboard = () => {
             label={i18n.t("dashboard.counters.finished")}
             value={counters.supportFinished}
             icon={<CheckCircleIcon />}
-            color="#10B981"
+            color="#682EE3"
           />
 
           {/* NOVOS CONTATOS */}
@@ -490,7 +487,7 @@ const Dashboard = () => {
             label={i18n.t("dashboard.counters.newContacts")}
             value={GetContacts(true)}
             icon={<GroupAddIcon />}
-            color="#3B82F6"
+            color="#682EE3"
           />
 
           
@@ -499,7 +496,7 @@ const Dashboard = () => {
             label={i18n.t("dashboard.counters.averageTalkTime")}
             value={formatTime(counters.avgSupportTime)}
             icon={<AccessAlarmIcon />}
-            color="#8B5CF6"
+            color="#682EE3"
           />
 
           {/* T.M. DE ESPERA */}
@@ -507,7 +504,7 @@ const Dashboard = () => {
             label={i18n.t("dashboard.counters.averageWaitTime")}
             value={formatTime(counters.avgWaitTime)}
             icon={<TimerIcon />}
-            color="#EF4444"
+            color="#682EE3"
           />
 		  
 		  {/* FILTROS */}
