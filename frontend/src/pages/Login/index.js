@@ -34,13 +34,13 @@ const Copyright = () => {
  };
 
 const useStyles = makeStyles(theme => ({
-	"@keyframes cardRise": {
-		from: { opacity: 0, transform: "translateY(16px)" },
-		to: { opacity: 1, transform: "translateY(0)" },
-	},
 	"@keyframes fadeIn": {
 		from: { opacity: 0 },
 		to: { opacity: 1 },
+	},
+	"@keyframes riseIn": {
+		from: { opacity: 0, transform: "translateY(14px)" },
+		to: { opacity: 1, transform: "translateY(0)" },
 	},
 	root: {
 		width: "100vw",
@@ -63,7 +63,7 @@ const useStyles = makeStyles(theme => ({
 		border: "1px solid #E5E2DA",
 		borderTop: "4px solid #682EE3",
 		boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
-		animation: "$cardRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both",
+		animation: "$fadeIn 0.4s ease both",
 	},
 	// Painel da logo (a logo da empresa e branca) — cor de acento chapada
 	logoWrapper: {
@@ -75,6 +75,8 @@ const useStyles = makeStyles(theme => ({
 		display: "flex",
 		justifyContent: "center",
 		alignItems: "center",
+		opacity: 0,
+		animation: "$riseIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both",
 	},
 	logoImg: {
 		width: "70%",
@@ -83,6 +85,14 @@ const useStyles = makeStyles(theme => ({
 	form: {
 		width: "100%",
 		marginTop: theme.spacing(1),
+		"& > *": {
+			opacity: 0,
+			animation: "$riseIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both",
+		},
+		"& > *:nth-child(1)": { animationDelay: "0.22s" },
+		"& > *:nth-child(2)": { animationDelay: "0.34s" },
+		"& > *:nth-child(3)": { animationDelay: "0.46s" },
+		"& > *:nth-child(4)": { animationDelay: "0.58s" },
 		"& .MuiOutlinedInput-root": {
 			borderRadius: 10,
 			backgroundColor: "#FFFFFF",

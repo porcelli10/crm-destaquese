@@ -4,9 +4,11 @@ import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import { makeStyles } from "@material-ui/core/styles";
 
+import Typography from "@material-ui/core/Typography";
+import ForumOutlinedIcon from "@material-ui/icons/ForumOutlined";
+
 import TicketsManager from "../../components/TicketsManagerTabs/";
 import Ticket from "../../components/Ticket/";
-import logo from "../../assets/logo.png"; //PLW DESIGN LOGO//
 import { i18n } from "../../translate/i18n";
 
 const useStyles = makeStyles(theme => ({
@@ -36,12 +38,33 @@ const useStyles = makeStyles(theme => ({
 		flexDirection: "column",
 	},
 	welcomeMsg: {
-		backgroundColor: theme.palette.boxticket, //DARK MODE PLW DESIGN//
+		backgroundColor: theme.palette.type === "light" ? "#FAF9F6" : theme.palette.boxticket,
 		display: "flex",
-		justifyContent: "space-evenly",
+		flexDirection: "column",
+		justifyContent: "center",
 		alignItems: "center",
 		height: "100%",
 		textAlign: "center",
+		gap: 16,
+	},
+	emptyIcon: {
+		width: 96,
+		height: 96,
+		borderRadius: "50%",
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "rgba(104,46,227,0.08)",
+		color: "#682EE3",
+	},
+	emptyTitle: {
+		fontWeight: 600,
+		color: theme.palette.type === "light" ? "#3A3A42" : "#F3F3F3",
+	},
+	emptySubtitle: {
+		fontSize: 14,
+		color: theme.palette.type === "light" ? "#8A8A93" : "#BBB",
+		maxWidth: 280,
 	},
 }));
 
@@ -63,12 +86,15 @@ const TicketsCustom = () => {
 							</>
 						) : (
 							<Paper square variant="outlined" className={classes.welcomeMsg}>
-							{/* PLW DESIGN LOGO */}
-							<div>
-							<center><img style={{ margin: "0 auto", width: "70%" }} src={logo} alt="logologin" /></center>
-							</div>
-							{/* PLW DESIGN LOGO */}
-							{/*<span>{i18n.t("chat.noTicketMessage")}</span>*/}
+								<div className={classes.emptyIcon}>
+									<ForumOutlinedIcon style={{ fontSize: 44 }} />
+								</div>
+								<Typography variant="h6" className={classes.emptyTitle}>
+									{i18n.t("chat.noTicketMessage")}
+								</Typography>
+								<Typography className={classes.emptySubtitle}>
+									Selecione uma conversa na lista ao lado para começar o atendimento.
+								</Typography>
 							</Paper>
 						)}
 					</Grid>
