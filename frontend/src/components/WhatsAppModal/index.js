@@ -114,7 +114,8 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
     maxUseBotQueues: 3,
     integration: null,
     // Canal da conexão: "baileys" (QR Code) ou "official" (API Oficial / Meta Cloud API)
-    channel: "baileys",
+    // Baileys (QR Code) desativado temporariamente — somente API Oficial.
+    channel: "official",
     officialWabaId: "",
     officialPhoneNumberId: "",
     officialAccessToken: "",
@@ -397,7 +398,8 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
                     label={i18n.t("whatsappModal.form.channel") || "Tipo de conexão"}
                     disabled={Boolean(whatsAppId)}
                   >
-                    <MenuItem value="baileys">WhatsApp (QR Code)</MenuItem>
+                    {/* Baileys (QR Code) desativado temporariamente — reativar removendo o comentario abaixo */}
+                    {/* <MenuItem value="baileys">WhatsApp (QR Code)</MenuItem> */}
                     <MenuItem value="official">WhatsApp API Oficial (Meta Cloud)</MenuItem>
                   </Field>
                 </FormControl>
