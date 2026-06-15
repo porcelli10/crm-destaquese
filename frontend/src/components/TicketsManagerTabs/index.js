@@ -77,17 +77,28 @@ const useStyles = makeStyles(theme => ({
 		padding: theme.spacing(1),
 	},
 
+	searchBox: {
+		padding: theme.spacing(1),
+		borderBottom: theme.palette.type === "light" ? "1px solid #ECE9E2" : "1px solid #2E2E3E",
+		backgroundColor: theme.palette.type === "light" ? "#FFFFFF" : theme.palette.tabHeaderBackground,
+	},
+
 	serachInputWrapper: {
 		flex: 1,
-		background: theme.palette.total,
+		backgroundColor: theme.palette.type === "light" ? "#F5F3EF" : theme.palette.total,
 		display: "flex",
-		borderRadius: 40,
-		padding: 4,
-		marginRight: theme.spacing(1),
+		borderRadius: 10,
+		border: theme.palette.type === "light" ? "1px solid #E5E2DA" : "1px solid #444",
+		padding: "6px 4px",
+		transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+		"&:focus-within": {
+			borderColor: "#682EE3",
+			boxShadow: "0 0 0 3px rgba(104,46,227,0.12)",
+		},
 	},
 
 	searchIcon: {
-		color: "grey",
+		color: "#8A8A93",
 		marginLeft: 6,
 		marginRight: 6,
 		alignSelf: "center",
@@ -96,7 +107,6 @@ const useStyles = makeStyles(theme => ({
 	searchInput: {
 		flex: 1,
 		border: "none",
-		borderRadius: 30,
 	},
 
 	insiderTabPanel: {
@@ -186,6 +196,10 @@ const TicketsManagerTabs = () => {
       return;
     }
 
+    if (tab !== "search") {
+      setTab("search");
+    }
+
     searchTimeout = setTimeout(() => {
       setSearchParam(searchedTerm);
     }, 500);
@@ -231,9 +245,21 @@ const TicketsManagerTabs = () => {
           handleCloseOrOpenTicket(ticket);
         }}
       />
+      <Paper elevation={0} square className={classes.searchBox}>
+        <div className={classes.serachInputWrapper}>
+          <SearchIcon className={classes.searchIcon} />
+          <InputBase
+            className={classes.searchInput}
+            inputRef={searchInputRef}
+            placeholder={i18n.t("tickets.search.placeholder")}
+            type="search"
+            onChange={handleSearch}
+          />
+        </div>
+      </Paper>
       <Paper elevation={0} square className={classes.tabsHeader}>
         <Tabs
-          value={tab}
+          value={tab === "search" ? false : tab}
           onChange={handleChangeTab}
           variant="fullWidth"
           indicatorColor="primary"
@@ -252,58 +278,37 @@ const TicketsManagerTabs = () => {
             label={i18n.t("tickets.tabs.closed.title")}
             classes={{ root: classes.tab }}
           />
-          <Tab
-            value={"search"}
-            icon={<SearchIcon />}
-            label={i18n.t("tickets.tabs.search.title")}
-            classes={{ root: classes.tab }}
-          />
         </Tabs>
       </Paper>
       <Paper square elevation={0} className={classes.ticketOptionsBox}>
-        {tab === "search" ? (
-          <div className={classes.serachInputWrapper}>
-            <SearchIcon className={classes.searchIcon} />
-            <InputBase
-              className={classes.searchInput}
-              inputRef={searchInputRef}
-              placeholder={i18n.t("tickets.search.placeholder")}
-              type="search"
-              onChange={handleSearch}
-            />
-          </div>
-        ) : (
-          <>
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={() => setNewTicketModalOpen(true)}
-            >
-              {i18n.t("ticketsManager.buttons.newTicket")}
-            </Button>
-            <Can
-              role={user.profile}
-              perform="tickets-manager:showall"
-              yes={() => (
-                <FormControlLabel
-                  label={i18n.t("tickets.buttons.showAll")}
-                  labelPlacement="start"
-                  control={
-                    <Switch
-                      size="small"
-                      checked={showAllTickets}
-                      onChange={() =>
-                        setShowAllTickets((prevState) => !prevState)
-                      }
-                      name="showAllTickets"
-                      color="primary"
-                    />
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => setNewTicketModalOpen(true)}
+        >
+          {i18n.t("ticketsManager.buttons.newTicket")}
+        </Button>
+        <Can
+          role={user.profile}
+          perform="tickets-manager:showall"
+          yes={() => (
+            <FormControlLabel
+              label={i18n.t("tickets.buttons.showAll")}
+              labelPlacement="start"
+              control={
+                <Switch
+                  size="small"
+                  checked={showAllTickets}
+                  onChange={() =>
+                    setShowAllTickets((prevState) => !prevState)
                   }
+                  name="showAllTickets"
+                  color="primary"
                 />
-              )}
+              }
             />
-          </>
-        )}
+          )}
+        />
         <TicketsQueueSelect
           style={{ marginLeft: 6 }}
           selectedQueueIds={selectedQueueIds}
