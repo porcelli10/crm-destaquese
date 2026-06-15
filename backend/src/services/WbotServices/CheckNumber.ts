@@ -19,6 +19,12 @@ const CheckContactNumber = async (
 ): Promise<IOnWhatsapp> => {
   const defaultWhatsapp = await GetDefaultWhatsApp(companyId);
 
+  // Canal oficial (Meta Cloud API) não possui sessão Baileys nem onWhatsApp().
+  // Retornamos o próprio número como jid válido, sem checar via Baileys.
+  if (defaultWhatsapp.channel === "official") {
+    return { jid: `${number}@s.whatsapp.net`, exists: true };
+  }
+
   const wbot = getWbot(defaultWhatsapp.id);
   const isNumberExit = await checker(number, wbot);
 
