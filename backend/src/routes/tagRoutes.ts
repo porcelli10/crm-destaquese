@@ -1,9 +1,13 @@
 import express from "express";
 import isAuth from "../middleware/isAuth";
+import tokenAuth from "../middleware/tokenAuth";
 
 import * as TagController from "../controllers/TagController";
 
 const tagRoutes = express.Router();
+
+// API externa: atribui uma tag a um contato pelo numero (auth via token do WhatsApp)
+tagRoutes.post("/api/tags/add", tokenAuth, TagController.addTagApi);
 
 tagRoutes.get("/tags/list", isAuth, TagController.list);
 

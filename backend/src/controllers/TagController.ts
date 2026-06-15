@@ -11,6 +11,7 @@ import DeleteService from "../services/TagServices/DeleteService";
 import SimpleListService from "../services/TagServices/SimpleListService";
 import SyncTagService from "../services/TagServices/SyncTagsService";
 import KanbanListService from "../services/TagServices/KanbanListService";
+import AddTagToContactService from "../services/TagServices/AddTagToContactService";
 
 type IndexQuery = {
   searchParam?: string;
@@ -125,4 +126,42 @@ export const syncTags = async (
   const tags = await SyncTagService({ ...data, companyId });
 
   return res.json(tags);
+};
+
+// API externa (autenticada pelo token do WhatsApp via tokenAuth):
+// atribui uma tag ao atendimento de um contato identificado pelo numero.
+export const addTagApi = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { whatsappId } = req.params as unknown as { whatsappId: number };
+  const { number, tag, color } = req.body as {
+    number: string;
+    tag: string;
+    color?: string;
+  };
+
+  const result = await AddTagToContactService({
+    whatsappId,
+    number,
+    tag,
+    color
+  });
+
+  return res.status(200).json({
+    message: result.alreadyTagged
+      ? "A tag já estava aplicada a este atendimento"
+      : "Tag adicionada com sucesso",
+    ticketId: result.ticket.id,
+    contact: {
+      id: result.contact.id,
+      number: result.contact.number,
+      name: result.contact.name
+    },
+    tag: {
+      id: result.tag.id,
+      name: result.tag.name,
+      color: result.tag.color
+    }
+  });
 };
