@@ -34,6 +34,14 @@ const Copyright = () => {
  };
 
 const useStyles = makeStyles(theme => ({
+	"@keyframes cardRise": {
+		from: { opacity: 0, transform: "translateY(16px)" },
+		to: { opacity: 1, transform: "translateY(0)" },
+	},
+	"@keyframes fadeIn": {
+		from: { opacity: 0 },
+		to: { opacity: 1 },
+	},
 	root: {
 		width: "100vw",
 		height: "100vh",
@@ -55,6 +63,7 @@ const useStyles = makeStyles(theme => ({
 		border: "1px solid #E5E2DA",
 		borderTop: "4px solid #682EE3",
 		boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
+		animation: "$cardRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both",
 	},
 	// Painel da logo (a logo da empresa e branca) — cor de acento chapada
 	logoWrapper: {

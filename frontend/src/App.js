@@ -107,6 +107,35 @@ const App = () => {
                         fontWeight: 600,
                     },
                 },
+                MuiListItem: {
+                    root: {
+                        "&.Mui-selected": {
+                            backgroundColor: "rgba(104,46,227,0.08)",
+                        },
+                        "&.Mui-selected:hover": {
+                            backgroundColor: "rgba(104,46,227,0.12)",
+                        },
+                    },
+                },
+                MuiTableCell: {
+                    root: {
+                        borderBottom: mode === "light"
+                            ? "1px solid #ECE9E2"
+                            : "1px solid #2E2E3E",
+                    },
+                },
+                MuiDialogTitle: {
+                    root: {
+                        "& .MuiTypography-root": {
+                            fontWeight: 600,
+                        },
+                    },
+                },
+                MuiDivider: {
+                    root: {
+                        backgroundColor: mode === "light" ? "#ECE9E2" : "#2E2E3E",
+                    },
+                },
             },
             scrollbarStyles: {
                 "&::-webkit-scrollbar": {
