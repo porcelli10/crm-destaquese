@@ -38,6 +38,7 @@ const MessagesAPI = () => {
 
   const [formMessageTextData,] = useState({ token: '', number: '', body: '' })
   const [formMessageMediaData,] = useState({ token: '', number: '', medias: '' })
+  const [formAddTagData,] = useState({ token: '', number: '', tag: '' })
   const [file, setFile] = useState({})
 
   const { getPlanCompany } = usePlans();
@@ -59,6 +60,10 @@ const MessagesAPI = () => {
 
   const getEndpoint = () => {
     return process.env.REACT_APP_BACKEND_URL + '/api/messages/send'
+  }
+
+  const getTagEndpoint = () => {
+    return process.env.REACT_APP_BACKEND_URL + '/api/tags/add'
   }
 
   const handleSendTextMessage = async (values) => {
@@ -100,6 +105,100 @@ const MessagesAPI = () => {
     } catch (err) {
       toastError(err);
     }
+  }
+
+  const handleAddTag = async (values) => {
+    const { number, tag } = values;
+    const data = { number, tag };
+    try {
+      await axios.request({
+        url: getTagEndpoint(),
+        method: 'POST',
+        data,
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization': `Bearer ${values.token}`
+        }
+      })
+      toast.success("Tag adicionada com sucesso!");
+    } catch (err) {
+      toastError(err);
+    }
+  }
+
+  const renderFormAddTag = () => {
+    return (
+      <Formik
+        initialValues={formAddTagData}
+        enableReinitialize={true}
+        onSubmit={(values, actions) => {
+          setTimeout(async () => {
+            await handleAddTag(values);
+            actions.setSubmitting(false);
+            actions.resetForm()
+          }, 400);
+        }}
+        className={classes.elementMargin}
+      >
+        {({ isSubmitting }) => (
+          <Form className={classes.formContainer}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <Field
+                  as={TextField}
+                  label="Token"
+                  name="token"
+                  variant="outlined"
+                  margin="dense"
+                  fullWidth
+                  className={classes.textField}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Field
+                  as={TextField}
+                  label="Número"
+                  name="number"
+                  variant="outlined"
+                  margin="dense"
+                  fullWidth
+                  className={classes.textField}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Field
+                  as={TextField}
+                  label="Tag"
+                  name="tag"
+                  variant="outlined"
+                  margin="dense"
+                  fullWidth
+                  className={classes.textField}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} className={classes.textRight}>
+                <Button
+                  type="submit"
+                  color="primary"
+                  variant="contained"
+                  className={classes.btnWrapper}
+                >
+                  {isSubmitting ? (
+                    <CircularProgress
+                      size={24}
+                      className={classes.buttonProgress}
+                    />
+                  ) : i18n.t('messagesAPI.buttons.send')}
+                </Button>
+              </Grid>
+            </Grid>
+          </Form>
+        )}
+      </Formik>
+    )
   }
 
   const renderFormMessageText = () => {
@@ -336,6 +435,27 @@ const MessagesAPI = () => {
             <b>{i18n.t('messagesAPI.labels.tests')}</b>
           </Typography>
           {renderFormMessageMedia()}
+        </Grid>
+      </Grid>
+      <Typography variant="h6" color="primary" className={classes.elementMargin}>
+        Adicionar Tag a um contato
+      </Typography>
+      <Grid container>
+        <Grid item xs={12} sm={6}>
+          <Typography className={classes.elementMargin} component="div">
+            <p>Aplica uma tag ao atendimento do contato informado. Se a tag não existir, ela é criada automaticamente.</p>
+            <b>Endpoint: </b> {getTagEndpoint()} <br />
+            <b>{i18n.t('messagesAPI.labels.method2')}: </b> POST <br />
+            <b>Headers: </b> Authorization (Bearer token) {i18n.t('messagesAPI.labels.e')} Content-Type (application/json) <br />
+            <b>Body: </b> {"{ \"number\": \"5599999999999\", \"tag\": \"Cliente VIP\" }"} <br />
+            <b>Opcional: </b> {"\"color\": \"#FF8800\""} (cor da tag, caso seja criada)
+          </Typography>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Typography className={classes.elementMargin}>
+            <b>{i18n.t('messagesAPI.labels.tests')}</b>
+          </Typography>
+          {renderFormAddTag()}
         </Grid>
       </Grid>
     </Paper>
