@@ -36,17 +36,17 @@ const Copyright = () => {
 const useStyles = makeStyles(theme => ({
 	"@keyframes floatA": {
 		"0%":   { transform: "translate(0px, 0px) scale(1)" },
-		"50%":  { transform: "translate(40px, -50px) scale(1.08)" },
+		"50%":  { transform: "translate(50px, -60px) scale(1.1)" },
 		"100%": { transform: "translate(0px, 0px) scale(1)" },
 	},
 	"@keyframes floatB": {
 		"0%":   { transform: "translate(0px, 0px) scale(1)" },
-		"50%":  { transform: "translate(-45px, 35px) scale(1.12)" },
+		"50%":  { transform: "translate(-55px, 45px) scale(1.15)" },
 		"100%": { transform: "translate(0px, 0px) scale(1)" },
 	},
 	"@keyframes floatC": {
 		"0%":   { transform: "translate(0px, 0px) scale(1)" },
-		"50%":  { transform: "translate(30px, 40px) scale(0.92)" },
+		"50%":  { transform: "translate(40px, 50px) scale(0.9)" },
 		"100%": { transform: "translate(0px, 0px) scale(1)" },
 	},
 	"@keyframes cardIn": {
@@ -80,7 +80,7 @@ const useStyles = makeStyles(theme => ({
 		top: "-120px",
 		left: "-100px",
 		background: "radial-gradient(circle at 30% 30%, #8B5CF6 0%, #682EE3 70%)",
-		animation: "$floatA 16s ease-in-out infinite",
+		animation: "$floatA 8s ease-in-out infinite",
 	},
 	blobB: {
 		width: 360,
@@ -88,7 +88,7 @@ const useStyles = makeStyles(theme => ({
 		bottom: "-110px",
 		right: "-80px",
 		background: "radial-gradient(circle at 30% 30%, #A78BFA 0%, #682EE3 75%)",
-		animation: "$floatB 20s ease-in-out infinite",
+		animation: "$floatB 10s ease-in-out infinite",
 	},
 	blobC: {
 		width: 300,
@@ -97,7 +97,7 @@ const useStyles = makeStyles(theme => ({
 		left: "8%",
 		background: "radial-gradient(circle at 30% 30%, #C4B5FD 0%, #7C3AED 80%)",
 		opacity: 0.35,
-		animation: "$floatC 24s ease-in-out infinite",
+		animation: "$floatC 12s ease-in-out infinite",
 	},
 	container: {
 		position: "relative",
@@ -118,29 +118,60 @@ const useStyles = makeStyles(theme => ({
 		margin: theme.spacing(1),
 		backgroundColor: theme.palette.secondary.main,
 	},
+	// Painel roxo atras da logo (a logo da empresa e branca)
+	logoWrapper: {
+		width: "100%",
+		background: "linear-gradient(135deg, #7C3AED 0%, #682EE3 100%)",
+		borderRadius: 16,
+		padding: "22px 24px",
+		marginBottom: 8,
+		display: "flex",
+		justifyContent: "center",
+		alignItems: "center",
+		boxShadow: "0 8px 22px rgba(104,46,227,0.28)",
+	},
+	logoImg: {
+		width: "72%",
+		display: "block",
+	},
 	form: {
 		width: "100%",
 		marginTop: theme.spacing(2),
 		// Campos de email/senha mais bonitos
 		"& .MuiOutlinedInput-root": {
 			borderRadius: 12,
-			backgroundColor: "#FAF9F6",
-			transition: "box-shadow 0.2s ease, background-color 0.2s ease",
+			backgroundColor: "#FFFFFF",
+			transition: "box-shadow 0.2s ease, border-color 0.2s ease",
 			"& fieldset": {
-				borderColor: "#E5E2DA",
+				borderColor: "#D8D4CC",
 				transition: "border-color 0.2s ease",
 			},
 			"&:hover fieldset": {
-				borderColor: "#C9BEF2",
+				borderColor: "#B9A9F0",
 			},
 			"&.Mui-focused": {
-				backgroundColor: "#FFFFFF",
-				boxShadow: "0 0 0 4px rgba(104,46,227,0.12)",
+				boxShadow: "0 0 0 4px rgba(104,46,227,0.15)",
 			},
 			"&.Mui-focused fieldset": {
 				borderColor: "#682EE3",
 				borderWidth: 2,
 			},
+		},
+		// Texto digitado escuro e legivel
+		"& .MuiOutlinedInput-input": {
+			color: "#2A2A33",
+		},
+		// Corrige o fundo azulado do autofill do navegador
+		"& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus": {
+			WebkitBoxShadow: "0 0 0 1000px #FFFFFF inset",
+			WebkitTextFillColor: "#2A2A33",
+			caretColor: "#2A2A33",
+			borderRadius: 12,
+			transition: "background-color 9999s ease-in-out 0s",
+		},
+		// Legenda (email/senha) com contraste legivel
+		"& .MuiInputLabel-root": {
+			color: "#6B6B72",
 		},
 		"& .MuiInputLabel-root.Mui-focused": {
 			color: "#682EE3",
@@ -246,8 +277,8 @@ const Login = () => {
 		<Container className={classes.container} component="main" maxWidth="xs">
 			<CssBaseline/>
 			<div className={classes.paper}>
-				<div>
-					<img style={{ margin: "0 auto", width: "70%" }} src={logo} alt="Whats" />
+				<div className={classes.logoWrapper}>
+					<img className={classes.logoImg} src={logo} alt="Logo" />
 				</div>
 				{/*<Typography component="h1" variant="h5">
 					{i18n.t("login.title")}
