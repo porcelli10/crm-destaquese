@@ -8,9 +8,13 @@ const CheckIsValidContact = async (
 ): Promise<void> => {
   const defaultWhatsapp = await GetDefaultWhatsApp(companyId);
 
-  // Canal oficial (Meta Cloud API) não possui sessão Baileys nem onWhatsApp().
-  // Não há como validar o número via Baileys, então consideramos válido.
-  if (defaultWhatsapp.channel === "official") {
+  // Canais sem sessão Baileys (API Oficial e Hub NotificaMe) não têm
+  // onWhatsApp(). Não há como validar via Baileys, então consideramos válido.
+  if (
+    defaultWhatsapp.channel === "official" ||
+    defaultWhatsapp.channel === "hub" ||
+    defaultWhatsapp.channel === "iasolution"
+  ) {
     return;
   }
 

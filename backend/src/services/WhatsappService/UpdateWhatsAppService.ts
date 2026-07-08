@@ -33,6 +33,10 @@ interface WhatsappData {
   officialAccessToken?: string;
   officialVerifyToken?: string;
   officialApiVersion?: string;
+  hubToken?: string;
+  hubChannel?: string;
+  hubFrom?: string;
+  iasolutionToken?: string;
 }
 
 interface Request {
@@ -83,7 +87,11 @@ const UpdateWhatsAppService = async ({
     officialPhoneNumberId,
     officialAccessToken,
     officialVerifyToken,
-    officialApiVersion
+    officialApiVersion,
+    hubToken,
+    hubChannel,
+    hubFrom,
+    iasolutionToken
   } = whatsappData;
 
   try {
@@ -139,7 +147,11 @@ const UpdateWhatsAppService = async ({
     officialPhoneNumberId,
     officialAccessToken,
     officialVerifyToken,
-    officialApiVersion
+    officialApiVersion,
+    hubToken,
+    hubChannel,
+    hubFrom,
+    iasolutionToken
   });
 
   await AssociateWhatsappQueue(whatsapp, queueIds);

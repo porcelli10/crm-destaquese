@@ -98,6 +98,22 @@ class Whatsapp extends Model<Whatsapp> {
   @Column
   officialApiVersion: string;
 
+  // Credenciais do canal Hub NotificaMe — usadas quando channel === "hub"
+  @Column(DataType.TEXT)
+  hubToken: string;
+
+  // Tipo do canal no Hub: "whatsapp" | "facebook" | "instagram"
+  @Column
+  hubChannel: string;
+
+  // Identificador do remetente no Hub (from no envio / to no recebimento)
+  @Column
+  hubFrom: string;
+
+  // Token do canal iaSolution Hub — usado quando channel === "iasolution"
+  @Column(DataType.TEXT)
+  iasolutionToken: string;
+
   @Default(false)
   @AllowNull
   @Column

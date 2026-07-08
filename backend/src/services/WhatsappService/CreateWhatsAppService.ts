@@ -34,6 +34,10 @@ interface Request {
   officialAccessToken?: string;
   officialVerifyToken?: string;
   officialApiVersion?: string;
+  hubToken?: string;
+  hubChannel?: string;
+  hubFrom?: string;
+  iasolutionToken?: string;
 }
 
 interface Response {
@@ -68,7 +72,11 @@ const CreateWhatsAppService = async ({
   officialPhoneNumberId = null,
   officialAccessToken = null,
   officialVerifyToken = null,
-  officialApiVersion = "v21.0"
+  officialApiVersion = "v21.0",
+  hubToken = null,
+  hubChannel = null,
+  hubFrom = null,
+  iasolutionToken = null
 }: Request): Promise<Response> => {
 
   const company = await Company.findOne({
@@ -187,7 +195,11 @@ const CreateWhatsAppService = async ({
       officialPhoneNumberId,
       officialAccessToken,
       officialVerifyToken,
-      officialApiVersion
+      officialApiVersion,
+      hubToken,
+      hubChannel,
+      hubFrom,
+      iasolutionToken
     },
     { include: ["queues"] }
   );

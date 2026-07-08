@@ -10,9 +10,13 @@ export const StartWhatsAppSession = async (
   whatsapp: Whatsapp,
   companyId: number
 ): Promise<void> => {
-  // Canal oficial (Meta Cloud API): não há sessão Baileys nem QR Code.
-  // A "conexão" é baseada em token, então marcamos como CONNECTED diretamente.
-  if (whatsapp.channel === "official") {
+  // Canais baseados em token (API Oficial Meta Cloud, Hub NotificaMe e
+  // iaSolution): não há sessão Baileys nem QR Code, marcamos CONNECTED direto.
+  if (
+    whatsapp.channel === "official" ||
+    whatsapp.channel === "hub" ||
+    whatsapp.channel === "iasolution"
+  ) {
     await whatsapp.update({ status: "CONNECTED", qrcode: "" });
     const ioOfficial = getIO();
     ioOfficial

@@ -8,6 +8,8 @@ import Ticket from "../../models/Ticket";
 
 import formatBody from "../../helpers/Mustache";
 import SendTextMessageOfficial from "../WABAServices/SendTextMessageOfficial";
+import SendTextMessageHub from "../HubServices/SendTextMessageHub";
+import SendTextMessageIaSolution from "../IaSolutionServices/SendTextMessageIaSolution";
 
 interface Request {
   body: string;
@@ -23,6 +25,18 @@ const SendWhatsAppMessage = async ({
   // Canal oficial (Meta Cloud API): envia via Graph API e persiste localmente
   if (ticket.whatsapp?.channel === "official") {
     await SendTextMessageOfficial({ body, ticket });
+    return {} as WAMessage;
+  }
+
+  // Canal Hub NotificaMe (WhatsApp/Facebook/Instagram): envia via SDK do Hub
+  if (ticket.whatsapp?.channel === "hub") {
+    await SendTextMessageHub({ body, ticket });
+    return {} as WAMessage;
+  }
+
+  // Canal iaSolution Hub (WhatsApp Cloud API): envia via API REST do iaSolution
+  if (ticket.whatsapp?.channel === "iasolution") {
+    await SendTextMessageIaSolution({ body, ticket });
     return {} as WAMessage;
   }
 

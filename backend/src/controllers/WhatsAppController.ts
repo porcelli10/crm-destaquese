@@ -36,6 +36,10 @@ interface WhatsappData {
   officialAccessToken?: string;
   officialVerifyToken?: string;
   officialApiVersion?: string;
+  hubToken?: string;
+  hubChannel?: string;
+  hubFrom?: string;
+  iasolutionToken?: string;
 }
 
 interface QueryParams {
@@ -75,7 +79,11 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     officialPhoneNumberId,
     officialAccessToken,
     officialVerifyToken,
-    officialApiVersion
+    officialApiVersion,
+    hubToken,
+    hubChannel,
+    hubFrom,
+    iasolutionToken
   }: WhatsappData = req.body;
   const { companyId } = req.user;
 
@@ -104,7 +112,11 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     officialPhoneNumberId,
     officialAccessToken,
     officialVerifyToken,
-    officialApiVersion
+    officialApiVersion,
+    hubToken,
+    hubChannel,
+    hubFrom,
+    iasolutionToken
   });
 
   StartWhatsAppSession(whatsapp, companyId);

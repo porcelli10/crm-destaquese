@@ -10,6 +10,8 @@ import Ticket from "../../models/Ticket";
 import { lookup } from "mime-types";
 import formatBody from "../../helpers/Mustache";
 import SendMediaMessageOfficial from "../WABAServices/SendMediaMessageOfficial";
+import SendMediaMessageHub from "../HubServices/SendMediaMessageHub";
+import SendMediaMessageIaSolution from "../IaSolutionServices/SendMediaMessageIaSolution";
 
 interface Request {
   media: Express.Multer.File;
@@ -123,6 +125,18 @@ const SendWhatsAppMedia = async ({
   // Canal oficial (Meta Cloud API): envia via Graph API e persiste localmente
   if (ticket.whatsapp?.channel === "official") {
     await SendMediaMessageOfficial({ media, ticket, body });
+    return {} as WAMessage;
+  }
+
+  // Canal Hub NotificaMe (WhatsApp/Facebook/Instagram): envia via SDK do Hub
+  if (ticket.whatsapp?.channel === "hub") {
+    await SendMediaMessageHub({ media, ticket, body });
+    return {} as WAMessage;
+  }
+
+  // Canal iaSolution Hub (WhatsApp Cloud API): envia via API REST do iaSolution
+  if (ticket.whatsapp?.channel === "iasolution") {
+    await SendMediaMessageIaSolution({ media, ticket, body });
     return {} as WAMessage;
   }
 

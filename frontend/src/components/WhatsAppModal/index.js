@@ -120,7 +120,13 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
     officialPhoneNumberId: "",
     officialAccessToken: "",
     officialVerifyToken: "",
-    officialApiVersion: "v21.0"
+    officialApiVersion: "v21.0",
+    // Canal Hub NotificaMe (WhatsApp / Facebook / Instagram)
+    hubToken: "",
+    hubChannel: "whatsapp",
+    hubFrom: "",
+    // Canal iaSolution Hub (WhatsApp Cloud API)
+    iasolutionToken: ""
   };
 
   const [whatsApp, setWhatsApp] = useState(initialState);
@@ -401,6 +407,8 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
                     {/* Baileys (QR Code) desativado temporariamente — reativar removendo o comentario abaixo */}
                     {/* <MenuItem value="baileys">WhatsApp (QR Code)</MenuItem> */}
                     <MenuItem value="official">WhatsApp API Oficial (Meta Cloud)</MenuItem>
+                    <MenuItem value="hub">Hub NotificaMe (WhatsApp / Facebook / Instagram)</MenuItem>
+                    <MenuItem value="iasolution">iaSolution Hub (WhatsApp)</MenuItem>
                   </Field>
                 </FormControl>
                 {values.channel === "official" && (
@@ -509,6 +517,136 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
                         helperText="Cole esta URL no campo Callback URL do webhook do app na Meta."
                       />
                     </div>
+                  </>
+                )}
+                {values.channel === "hub" && (
+                  <>
+                    <div
+                      style={{
+                        border: "1px solid #682EE3",
+                        borderRadius: 8,
+                        padding: "12px 16px",
+                        margin: "8px 0 4px",
+                        fontSize: 13,
+                      }}
+                    >
+                      Conecte o canal no painel do{" "}
+                      <strong>NotificaMe Hub</strong> (hub.notificame.com.br),
+                      copie o <strong>token</strong> e o{" "}
+                      <strong>identificador do canal</strong> e preencha abaixo.
+                      O número/página é conectado lá, não aqui.
+                    </div>
+                    <FormControl
+                      margin="dense"
+                      variant="outlined"
+                      fullWidth
+                    >
+                      <InputLabel id="hub-channel-select-label">
+                        Canal do Hub
+                      </InputLabel>
+                      <Field
+                        as={Select}
+                        labelId="hub-channel-select-label"
+                        id="hub-channel-select"
+                        name="hubChannel"
+                        label="Canal do Hub"
+                      >
+                        <MenuItem value="whatsapp">WhatsApp</MenuItem>
+                        <MenuItem value="facebook">Facebook (Messenger)</MenuItem>
+                        <MenuItem value="instagram">Instagram</MenuItem>
+                      </Field>
+                    </FormControl>
+                    <div>
+                      <Field
+                        as={TextField}
+                        label="Token do NotificaMe Hub"
+                        name="hubToken"
+                        fullWidth
+                        multiline
+                        rows={2}
+                        variant="outlined"
+                        margin="dense"
+                        helperText="Token de autenticação obtido no painel do NotificaMe Hub."
+                      />
+                    </div>
+                    <div>
+                      <Field
+                        as={TextField}
+                        label="Identificador do canal (from)"
+                        name="hubFrom"
+                        fullWidth
+                        variant="outlined"
+                        margin="dense"
+                        helperText="Identificador do remetente/canal no Hub (ex.: número do WhatsApp ou ID do canal)."
+                      />
+                    </div>
+                    <div>
+                      <TextField
+                        label="URL do Webhook (cadastrar no NotificaMe)"
+                        value={`${process.env.REACT_APP_PUBLIC_URL || process.env.REACT_APP_BACKEND_URL || ""}/hub-webhook`}
+                        fullWidth
+                        variant="outlined"
+                        margin="dense"
+                        InputProps={{ readOnly: true }}
+                        helperText="Cole esta URL como webhook do canal no painel do NotificaMe Hub."
+                      />
+                    </div>
+                  </>
+                )}
+                {values.channel === "iasolution" && (
+                  <>
+                    <div
+                      style={{
+                        border: "1px solid #682EE3",
+                        borderRadius: 8,
+                        padding: "12px 16px",
+                        margin: "8px 0 4px",
+                        fontSize: 13,
+                      }}
+                    >
+                      Conecte o número no painel do{" "}
+                      <strong>iaSolution Hub</strong> (hub.iasolution.app),
+                      abra <strong>Canais &gt; Detalhes do Canal</strong> e copie
+                      o <strong>token do canal</strong>. O número é conectado lá,
+                      não aqui.
+                    </div>
+                    <div>
+                      <Field
+                        as={TextField}
+                        label="Token do canal (iaSolution)"
+                        name="iasolutionToken"
+                        fullWidth
+                        multiline
+                        rows={2}
+                        variant="outlined"
+                        margin="dense"
+                        helperText="Token do canal obtido em Canais > Detalhes do Canal no painel do iaSolution."
+                      />
+                    </div>
+                    {whatsAppId ? (
+                      <div>
+                        <TextField
+                          label="URL do Webhook (cadastrar no iaSolution)"
+                          value={`${process.env.REACT_APP_PUBLIC_URL || process.env.REACT_APP_BACKEND_URL || ""}/iasolution-webhook/${whatsAppId}`}
+                          fullWidth
+                          variant="outlined"
+                          margin="dense"
+                          InputProps={{ readOnly: true }}
+                          helperText="Cole esta URL em Canais > Webhooks no painel do iaSolution."
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: "#888",
+                          padding: "4px 2px 0",
+                        }}
+                      >
+                        Salve a conexão e edite-a para gerar a URL do webhook a
+                        cadastrar no iaSolution.
+                      </div>
+                    )}
                   </>
                 )}
                 <div>

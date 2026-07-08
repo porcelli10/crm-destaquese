@@ -37,6 +37,8 @@ import flowCampaignRoutes from "./flowCampaignRoutes";
 import officialWebhookRoutes from "./officialWebhookRoutes";
 import officialTemplateRoutes from "./officialTemplateRoutes";
 import embeddedSignupRoutes from "./embeddedSignupRoutes";
+import hubWebhookRoutes from "./hubWebhookRoutes";
+import iasolutionWebhookRoutes from "./iasolutionWebhookRoutes";
 const routes = Router();
 
 routes.use(userRoutes);
@@ -80,5 +82,11 @@ routes.use(flowCampaignRoutes)
 routes.use("/webhooks", officialWebhookRoutes); // Callback URL da Meta
 routes.use(officialTemplateRoutes);             // message templates
 routes.use(embeddedSignupRoutes);               // Embedded Signup (FB Login for Business)
+
+// Hub NotificaMe (WhatsApp / Facebook / Instagram)
+routes.use("/hub-webhook", hubWebhookRoutes);   // Webhook cadastrado no painel do NotificaMe
+
+// iaSolution Hub (WhatsApp Cloud API) — URL inclui o id da conexão
+routes.use("/iasolution-webhook", iasolutionWebhookRoutes);
 
 export default routes;
