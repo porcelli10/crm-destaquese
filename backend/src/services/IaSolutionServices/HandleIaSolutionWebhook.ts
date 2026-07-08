@@ -148,6 +148,33 @@ const processValue = async (
   if (Array.isArray(value.messages)) {
     for (const msg of value.messages) {
       try {
+        // Ignora ECO de mensagem enviada por nós (ex.: resposta pelo celular).
+        // O iaSolution reenvia a msg de saída em value.messages com
+        // from = número business, o que criava um contato/ticket com o nosso
+        // próprio número (e um message.received errado para a IA).
+        const businessNumber = (
+          value.metadata?.display_phone_number || ""
+        ).replace(/\D/g, "");
+        const fromDigits = String(msg.from || "").replace(/\D/g, "");
+        const contactsArr: any[] = Array.isArray(value.contacts)
+          ? value.contacts
+          : [];
+        const fromInContacts = contactsArr.some(
+          (c: any) => c.wa_id === msg.from
+        );
+        const isOutboundEcho =
+          (!!businessNumber && fromDigits === businessNumber) ||
+          (contactsArr.length > 0 && !fromInContacts) ||
+          String(msg.from_me) === "true" ||
+          String(msg.direction).toUpperCase() === "OUT";
+
+        if (isOutboundEcho) {
+          logger.info(
+            `iaSolution: eco de mensagem de saída ignorado (from ${msg.from})`
+          );
+          continue;
+        }
+
         const contactInfo = value.contacts?.find(
           (c: any) => c.wa_id === msg.from
         );
