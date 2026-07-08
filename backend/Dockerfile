@@ -13,7 +13,6 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN rm -f package-lock.json
 
 COPY backend/package*.json ./
-COPY backend/yarn.lock ./
 COPY backend/ .
 
 # Instala as dependencias dentro da imagem (inclui notificamehubsdk).
