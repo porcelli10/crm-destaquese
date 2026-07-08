@@ -36,8 +36,16 @@ const FindOrCreateTicketService = async (
     await ticket.update({ unreadMessages, whatsappId });
   }
 
+  // Ticket estava fechado e o cliente enviou mensagem novamente: reabre em
+  // "pending" (aguardando), sem fila/atendente, e reinicia o tracking.
   if (ticket?.status === "closed") {
-    await ticket.update({ queueId: null, userId: null });
+    await ticket.update({ status: "pending", queueId: null, userId: null });
+    await FindOrCreateATicketTrakingService({
+      ticketId: ticket.id,
+      companyId,
+      whatsappId: ticket.whatsappId,
+      userId: null
+    });
   }
 
   if (!ticket && groupContact) {
