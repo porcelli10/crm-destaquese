@@ -14,6 +14,7 @@ import GetTicketWbot from "../../helpers/GetTicketWbot";
 import { verifyMessage } from "../WbotServices/wbotMessageListener";
 import ListSettingsServiceOne from "../SettingServices/ListSettingsServiceOne"; //NOVO PLW DESIGN//
 import DispatchTicketAcceptedWebhook from "./DispatchTicketAcceptedWebhook";
+import DispatchAutomationWebhook from "./DispatchAutomationWebhook";
 import ShowUserService from "../UserServices/ShowUserService"; //NOVO PLW DESIGN//
 import { isNil } from "lodash";
 import Whatsapp from "../../models/Whatsapp";
@@ -298,6 +299,21 @@ const UpdateTicketService = async ({
     // ex.: pausar um agente de IA para o número do cliente.
     if (oldStatus === "pending" && status === "open") {
       DispatchTicketAcceptedWebhook(ticket, companyId);
+    }
+
+    // Ticket encerrado: dispara webhook externo (best-effort), ex.: retomar o
+    // agente de IA para o número do cliente.
+    if (status === "closed" && oldStatus !== "closed") {
+      DispatchAutomationWebhook(companyId, {
+        event: "ticket.closed",
+        number: ticket.contact?.number,
+        contactName: ticket.contact?.name,
+        ticketId: ticket.id,
+        ticketUuid: ticket.uuid,
+        queueId: ticket.queueId,
+        userId: ticket.userId,
+        companyId
+      });
     }
 
     if (ticket.status !== oldStatus || ticket.user?.id !== oldUserId) {
