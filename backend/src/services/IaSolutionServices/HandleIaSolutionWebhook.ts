@@ -124,6 +124,10 @@ const processValue = async (
   const companyId = whatsapp.companyId;
   const io = getIO();
 
+  // [TEMP DEBUG] Log do payload cru para descobrir a estrutura do eco de saída.
+  // Remover depois de identificar os campos de direção/remetente.
+  logger.info(`iaSolution RAW value: ${JSON.stringify(value).slice(0, 3500)}`);
+
   // --- Atualizações de status (ack) ---
   if (Array.isArray(value.statuses)) {
     for (const status of value.statuses) {
