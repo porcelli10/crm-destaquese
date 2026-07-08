@@ -7,16 +7,24 @@ const GetProfilePicUrl = async (
 ): Promise<string> => {
   const defaultWhatsapp = await GetDefaultWhatsApp(companyId);
 
-  const wbot = getWbot(defaultWhatsapp.id);
+  const defaultPic = `${process.env.FRONTEND_URL}/nopicture.png`;
 
-  let profilePicUrl: string;
-  try {
-    profilePicUrl = await wbot.profilePictureUrl(`${number}@s.whatsapp.net`);
-  } catch (error) {
-    profilePicUrl = `${process.env.FRONTEND_URL}/nopicture.png`;
+  // Canais sem sessão Baileys (official / hub / iasolution) não possuem
+  // wbot.profilePictureUrl. Retorna a foto padrão sem tentar o Baileys —
+  // antes o getWbot() estourava (ERR_WAPP_NOT_INITIALIZED) e derrubava o
+  // envio via /api/messages/send.
+  if (defaultWhatsapp.channel !== "baileys") {
+    return defaultPic;
   }
 
-  return profilePicUrl;
+  // getWbot() também fica dentro do try: se a sessão Baileys não estiver
+  // pronta, cai na foto padrão em vez de quebrar o fluxo.
+  try {
+    const wbot = getWbot(defaultWhatsapp.id);
+    return await wbot.profilePictureUrl(`${number}@s.whatsapp.net`);
+  } catch (error) {
+    return defaultPic;
+  }
 };
 
 export default GetProfilePicUrl;
