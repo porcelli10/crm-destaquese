@@ -41,7 +41,8 @@ CRM de atendimento via WhatsApp (multi-tenant SaaS), white-label com marca **Des
 - **IP:** 2.24.81.12 (Hostinger KVM 8, Ubuntu 22.04)
 - **SSH:** `ssh root@2.24.81.12`
 - **Código na VPS:** `/opt/atendimento_destaque_se`
-- **Deploy key GitHub:** `/root/.ssh/easypanel_atendechat`
+- **Repositório GitHub:** `git@github.com:porcelli10/crm-destaquese.git` (privado)
+- **Deploy key GitHub:** `/root/.ssh/crm_destaquese` (registrada como deploy key no repo `crm-destaquese`)
 - **Frontend:** https://atende.destaqueseagora.com.br
 - **Backend/API:** https://api2.destaqueseagora.com.br
 
@@ -56,7 +57,7 @@ A VPS roda outros clientes via EasyPanel (n8n + Evolution API). **Nunca mexer no
 cd /opt/atendimento_destaque_se
 
 # 1. Pull do código
-GIT_SSH_COMMAND='ssh -i /root/.ssh/easypanel_atendechat' git pull origin main
+GIT_SSH_COMMAND='ssh -i /root/.ssh/crm_destaquese -o IdentitiesOnly=yes' git pull origin main
 
 # 2. Build (contexto = RAIZ do repo, não frontend/)
 docker build --no-cache -t atendimento_destaque_se_frontend:latest \
@@ -77,7 +78,7 @@ docker service update --force atendimento_destaque_se_frontend
 ```bash
 cd /opt/atendimento_destaque_se
 
-GIT_SSH_COMMAND='ssh -i /root/.ssh/easypanel_atendechat' git pull origin main
+GIT_SSH_COMMAND='ssh -i /root/.ssh/crm_destaquese -o IdentitiesOnly=yes' git pull origin main
 
 docker build --no-cache -t atendimento_destaque_se_backend:latest \
   -f backend/Dockerfile \
