@@ -108,7 +108,11 @@ export default function Options(props) {
 
   const [asaasType, setAsaasType] = useState("");
   const [loadingAsaasType, setLoadingAsaasType] = useState(false);
-  
+
+  // Webhook disparado ao ACEITAR um ticket (ex.: pausar agente de IA)
+  const [ticketAcceptedWebhookUrl, setTicketAcceptedWebhookUrl] = useState("");
+  const [loadingTicketAcceptedWebhookUrl, setLoadingTicketAcceptedWebhookUrl] = useState(false);
+
   // recursos a mais da plw design
 
   const [SendGreetingAccepted, setSendGreetingAccepted] = useState("disabled");
@@ -193,6 +197,11 @@ export default function Options(props) {
       const asaasType = settings.find((s) => s.key === "asaas");
       if (asaasType) {
         setAsaasType(asaasType.value);
+      }
+
+      const webhookSetting = settings.find((s) => s.key === "ticketAcceptedWebhookUrl");
+      if (webhookSetting) {
+        setTicketAcceptedWebhookUrl(webhookSetting.value);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -371,6 +380,17 @@ export default function Options(props) {
     toast.success(i18n.t("settings.options.toasts.success"));
     setLoadingAsaasType(false);
   }
+
+  async function handleChangeTicketAcceptedWebhookUrl(value) {
+    setLoadingTicketAcceptedWebhookUrl(true);
+    await update({
+      key: "ticketAcceptedWebhookUrl",
+      value,
+    });
+    toast.success(i18n.t("settings.options.toasts.success"));
+    setLoadingTicketAcceptedWebhookUrl(false);
+  }
+
   return (
     <>
       <Grid spacing={3} container>
@@ -718,6 +738,40 @@ export default function Options(props) {
             </TextField>
             <FormHelperText>
               {loadingAsaasType && i18n.t("settings.options.updating")}
+            </FormHelperText>
+          </FormControl>
+        </Grid>
+      </Grid>
+      {/*-----------------WEBHOOK AO ACEITAR TICKET-----------------*/}
+      <Grid spacing={3} container
+        style={{ marginBottom: 10 }}>
+        <Tabs
+          indicatorColor="primary"
+          textColor="primary"
+          scrollButtons="on"
+          variant="scrollable"
+          className={classes.tab}
+        >
+          <Tab label="WEBHOOK" />
+        </Tabs>
+        <Grid xs={12} sm={12} md={12} item>
+          <FormControl className={classes.selectContainer}>
+            <TextField
+              id="ticketAcceptedWebhookUrl"
+              name="ticketAcceptedWebhookUrl"
+              margin="dense"
+              label="URL do webhook ao aceitar ticket"
+              variant="outlined"
+              placeholder="https://..."
+              value={ticketAcceptedWebhookUrl}
+              onChange={(e) => setTicketAcceptedWebhookUrl(e.target.value)}
+              onBlur={(e) => handleChangeTicketAcceptedWebhookUrl(e.target.value)}
+            >
+            </TextField>
+            <FormHelperText>
+              {loadingTicketAcceptedWebhookUrl
+                ? i18n.t("settings.options.updating")
+                : "POST disparado ao aceitar um ticket, com o número do cliente no corpo (ex.: pausar um agente de IA)."}
             </FormHelperText>
           </FormControl>
         </Grid>

@@ -13,6 +13,7 @@ import FindOrCreateATicketTrakingService from "./FindOrCreateATicketTrakingServi
 import GetTicketWbot from "../../helpers/GetTicketWbot";
 import { verifyMessage } from "../WbotServices/wbotMessageListener";
 import ListSettingsServiceOne from "../SettingServices/ListSettingsServiceOne"; //NOVO PLW DESIGN//
+import DispatchTicketAcceptedWebhook from "./DispatchTicketAcceptedWebhook";
 import ShowUserService from "../UserServices/ShowUserService"; //NOVO PLW DESIGN//
 import { isNil } from "lodash";
 import Whatsapp from "../../models/Whatsapp";
@@ -292,6 +293,12 @@ const UpdateTicketService = async ({
     }
 
     await ticketTraking.save();
+
+    // Ticket aceito (pending -> open): dispara webhook externo (best-effort),
+    // ex.: pausar um agente de IA para o número do cliente.
+    if (oldStatus === "pending" && status === "open") {
+      DispatchTicketAcceptedWebhook(ticket, companyId);
+    }
 
     if (ticket.status !== oldStatus || ticket.user?.id !== oldUserId) {
 

@@ -378,7 +378,12 @@ const useStyles = makeStyles((theme) => ({
       ></TicketMessagesDialog>
       <ListItem dense button
         onClick={(e) => {
-          if (ticket.status === "pending") return;
+          if (ticket.status === "pending") {
+            // Ticket ainda não aceito: clicar em qualquer parte do card abre o
+            // preview (somente leitura) da conversa, sem aceitar.
+            setOpenTicketMessageDialog(true);
+            return;
+          }
           handleSelectTicket(ticket);
         }}
         selected={ticketId && +ticketId === ticket.id}
@@ -429,7 +434,10 @@ const useStyles = makeStyles((theme) => ({
                 {profile === "admin" && (
                   <Tooltip title={i18n.t("ticketsListItem.tooltip.peek")}>
                     <VisibilityIcon
-                      onClick={() => setOpenTicketMessageDialog(true)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenTicketMessageDialog(true);
+                      }}
                       fontSize="small"
                       style={{
                         color: blue[700],
@@ -516,7 +524,7 @@ const useStyles = makeStyles((theme) => ({
               size="small"
               loading={loading}
 			  //PLW DESIGN INSERIDO O handleChangeTab
-              onClick={e => handleAcepptTicket(ticket.id)}
+              onClick={e => { e.stopPropagation(); handleAcepptTicket(ticket.id); }}
             >
               {i18n.t("ticketsList.buttons.accept")}
             </ButtonWithSpinner>
@@ -530,7 +538,7 @@ const useStyles = makeStyles((theme) => ({
               className={classes.acceptButton}
               size="small"
               loading={loading}
-              onClick={e => handleCloseTicket(ticket.id)}
+              onClick={e => { e.stopPropagation(); handleCloseTicket(ticket.id); }}
             >
               {i18n.t("ticketsList.buttons.closed")}
             </ButtonWithSpinner>
