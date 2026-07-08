@@ -143,6 +143,13 @@ export const send = async (req: Request, res: Response): Promise<Response> => {
     if (medias) {
       await Promise.all(
         medias.map(async (media: Express.Multer.File) => {
+          // Canais sem sessão Baileys (official/hub/iasolution): a fila usa um
+          // helper Baileys-only (helpers/SendMessage), então enviamos direto
+          // pelo sender que trata o canal correto.
+          if (whatsapp.channel !== "baileys") {
+            await SendWhatsAppMedia({ media, ticket, body });
+            return;
+          }
           await req.app.get("queues").messageQueue.add(
             "SendMessage",
             {
