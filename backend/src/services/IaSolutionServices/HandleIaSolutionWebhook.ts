@@ -11,6 +11,7 @@ import CreateOrUpdateContactService from "../ContactServices/CreateOrUpdateConta
 import FindOrCreateTicketService from "../TicketServices/FindOrCreateTicketService";
 import CreateMessageService from "../MessageServices/CreateMessageService";
 import { downloadIaSolutionMedia, markIaSolutionMessageRead } from "./iaSolutionApi";
+import DispatchAutomationWebhook from "../TicketServices/DispatchAutomationWebhook";
 
 const publicFolder = path.resolve(__dirname, "..", "..", "..", "public");
 
@@ -200,6 +201,22 @@ const processValue = async (
         });
 
         await ticket.update({ lastMessage: body });
+
+        // Encaminha a mensagem recebida para o Webhook de automação (IA)
+        DispatchAutomationWebhook(companyId, {
+          event: "message.received",
+          channel: "iasolution",
+          number: contact.number,
+          contactName: contact.name,
+          body,
+          mediaType,
+          mediaUrl,
+          ticketId: ticket.id,
+          ticketUuid: ticket.uuid,
+          queueId: ticket.queueId,
+          fromMe: false,
+          companyId
+        });
 
         // Marca como lida na conta (best-effort)
         markIaSolutionMessageRead(whatsapp, msg.id);
