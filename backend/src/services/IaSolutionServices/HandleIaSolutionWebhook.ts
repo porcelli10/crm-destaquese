@@ -7,8 +7,10 @@ import { getIO } from "../../libs/socket";
 import { logger } from "../../utils/logger";
 import Whatsapp from "../../models/Whatsapp";
 import Message from "../../models/Message";
+import Ticket from "../../models/Ticket";
 import CreateOrUpdateContactService from "../ContactServices/CreateOrUpdateContactService";
 import FindOrCreateTicketService from "../TicketServices/FindOrCreateTicketService";
+import UpdateTicketService from "../TicketServices/UpdateTicketService";
 import CreateMessageService from "../MessageServices/CreateMessageService";
 import { downloadIaSolutionMedia, markIaSolutionMessageRead } from "./iaSolutionApi";
 import DispatchAutomationWebhook from "../TicketServices/DispatchAutomationWebhook";
@@ -148,10 +150,10 @@ const processValue = async (
   if (Array.isArray(value.messages)) {
     for (const msg of value.messages) {
       try {
-        // Ignora ECO de mensagem enviada por nós (ex.: resposta pelo celular).
+        // Detecta mensagem de SAÍDA (eco) — ex.: resposta enviada pelo celular.
         // O iaSolution reenvia a msg de saída em value.messages com
-        // from = número business, o que criava um contato/ticket com o nosso
-        // próprio número (e um message.received errado para a IA).
+        // from = número business. Aqui identificamos o cliente correto e
+        // tratamos como fromMe (em vez de criar contato com o nosso número).
         const businessNumber = (
           value.metadata?.display_phone_number || ""
         ).replace(/\D/g, "");
@@ -162,38 +164,57 @@ const processValue = async (
         const fromInContacts = contactsArr.some(
           (c: any) => c.wa_id === msg.from
         );
-        const isOutboundEcho =
+        const isOutbound =
           (!!businessNumber && fromDigits === businessNumber) ||
           (contactsArr.length > 0 && !fromInContacts) ||
           String(msg.from_me) === "true" ||
           String(msg.direction).toUpperCase() === "OUT";
 
-        if (isOutboundEcho) {
-          logger.info(
-            `iaSolution: eco de mensagem de saída ignorado (from ${msg.from})`
+        // Cliente = quem NÃO é a gente. Em mensagem de saída (nossa), é o `to`.
+        const customerNumber = isOutbound ? msg.to : msg.from;
+        if (!customerNumber) {
+          logger.warn(
+            `iaSolution: mensagem sem número do cliente (outbound=${isOutbound}); ignorada`
           );
           continue;
         }
 
-        const contactInfo = value.contacts?.find(
-          (c: any) => c.wa_id === msg.from
+        const contactInfo = contactsArr.find(
+          (c: any) => c.wa_id === customerNumber
         );
-        const contactName = contactInfo?.profile?.name || msg.from;
+        const contactName = contactInfo?.profile?.name || customerNumber;
 
+        // O serviço não sobrescreve o nome de um contato já existente.
         const contact = await CreateOrUpdateContactService({
           name: contactName,
-          number: msg.from,
+          number: customerNumber,
           isGroup: false,
           companyId,
           whatsappId: whatsapp.id
         });
 
-        const ticket = await FindOrCreateTicketService(
-          contact,
-          whatsapp.id,
-          1,
-          companyId
-        );
+        // Inbound: find/create (reabre em pending se estava fechado).
+        // Outbound (resposta pelo celular): usa o ticket mais recente do
+        // cliente, sem reabrir/mudar status aqui; cria só se não existir.
+        let ticket = null as any;
+        if (isOutbound) {
+          ticket = await Ticket.findOne({
+            where: {
+              contactId: contact.id,
+              companyId,
+              whatsappId: whatsapp.id
+            },
+            order: [["id", "DESC"]]
+          });
+        }
+        if (!ticket) {
+          ticket = await FindOrCreateTicketService(
+            contact,
+            whatsapp.id,
+            isOutbound ? 0 : 1,
+            companyId
+          );
+        }
 
         const { body, media } = parseIncomingMessage(msg);
 
@@ -219,8 +240,8 @@ const processValue = async (
             ticketId: ticket.id,
             contactId: contact.id,
             body,
-            fromMe: false,
-            read: false,
+            fromMe: isOutbound,
+            read: isOutbound,
             mediaType,
             mediaUrl
           },
@@ -229,24 +250,36 @@ const processValue = async (
 
         await ticket.update({ lastMessage: body });
 
-        // Encaminha a mensagem recebida para o Webhook de automação (IA)
-        DispatchAutomationWebhook(companyId, {
-          event: "message.received",
-          channel: "iasolution",
-          number: contact.number,
-          contactName: contact.name,
-          body,
-          mediaType,
-          mediaUrl,
-          ticketId: ticket.id,
-          ticketUuid: ticket.uuid,
-          queueId: ticket.queueId,
-          fromMe: false,
-          companyId
-        });
+        if (isOutbound) {
+          // Resposta enviada pelo celular: aceita o ticket automaticamente
+          // (pending -> open), o que dispara o webhook ticket.accepted (pausa
+          // a IA). Só quando estava aguardando.
+          if (ticket.status === "pending") {
+            await UpdateTicketService({
+              ticketData: { status: "open" },
+              ticketId: ticket.id,
+              companyId
+            });
+          }
+        } else {
+          // Mensagem recebida: encaminha para a IA e marca como lida.
+          DispatchAutomationWebhook(companyId, {
+            event: "message.received",
+            channel: "iasolution",
+            number: contact.number,
+            contactName: contact.name,
+            body,
+            mediaType,
+            mediaUrl,
+            ticketId: ticket.id,
+            ticketUuid: ticket.uuid,
+            queueId: ticket.queueId,
+            fromMe: false,
+            companyId
+          });
 
-        // Marca como lida na conta (best-effort)
-        markIaSolutionMessageRead(whatsapp, msg.id);
+          markIaSolutionMessageRead(whatsapp, msg.id);
+        }
       } catch (err) {
         Sentry.captureException(err);
         logger.error(`Erro ao processar mensagem iaSolution recebida: ${err}`);
