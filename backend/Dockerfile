@@ -14,8 +14,12 @@ RUN rm -f package-lock.json
 
 COPY backend/package*.json ./
 COPY backend/yarn.lock ./
-COPY backend/node_modules ./node_modules
 COPY backend/ .
+
+# Instala as dependencias dentro da imagem (inclui notificamehubsdk).
+# Antes o Dockerfile copiava node_modules do contexto, o que quebra em build a
+# partir de um clone limpo do Git (ex.: EasyPanel).
+RUN yarn install --network-timeout 600000
 
 # Configure git to use HTTPS instead of SSH
 RUN git config --global url."https://".insteadOf ssh://

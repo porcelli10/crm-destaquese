@@ -9,8 +9,11 @@ RUN npm install -g serve
 
 COPY frontend/package*.json ./
 COPY frontend/yarn.lock ./
-COPY frontend/node_modules ./node_modules
 COPY frontend/ .
+
+# Instala as dependencias dentro da imagem. Antes o Dockerfile copiava
+# node_modules do contexto, o que quebra em build a partir de clone limpo (EasyPanel).
+RUN yarn install --network-timeout 600000
 
 RUN rm -f .env 
 
@@ -59,6 +62,8 @@ RUN chmod +x update_app_color.sh
 RUN ./update_app_color.sh
 
 # Build the application
+# CI=false impede que warnings de ESLint quebrem o build do CRA (EasyPanel seta CI=true)
+ENV CI=false
 RUN yarn build
 
 EXPOSE 3001
