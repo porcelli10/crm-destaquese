@@ -1,10 +1,11 @@
+import { Op } from "sequelize";
 import AppError from "../../errors/AppError";
 import Whatsapp from "../../models/Whatsapp";
 import Tag from "../../models/Tag";
+import Ticket from "../../models/Ticket";
 import TicketTag from "../../models/TicketTag";
 import CheckContactNumber from "../WbotServices/CheckNumber";
 import CreateOrUpdateContactService from "../ContactServices/CreateOrUpdateContactService";
-import FindOrCreateTicketService from "../TicketServices/FindOrCreateTicketService";
 
 interface Request {
   whatsappId: number;
@@ -51,12 +52,37 @@ const AddTagToContactService = async ({
     companyId
   });
 
-  const ticket = await FindOrCreateTicketService(
-    contact,
-    whatsapp.id,
-    0,
-    companyId
-  );
+  // Uma tag é apenas metadado do atendimento: NÃO deve criar um ticket novo
+  // nem alterar status/fila. Por isso procuramos o atendimento existente do
+  // contato em vez de usar FindOrCreateTicketService (que duplicava o ticket
+  // e o jogava para "aguardando").
+  // Preferimos o atendimento ativo (aberto/aguardando); se não houver, usamos
+  // o mais recente (mesmo fechado) sem reabri-lo.
+  let ticket = await Ticket.findOne({
+    where: {
+      contactId: contact.id,
+      companyId,
+      status: { [Op.or]: ["open", "pending"] }
+    },
+    order: [["id", "DESC"]]
+  });
+
+  if (!ticket) {
+    ticket = await Ticket.findOne({
+      where: {
+        contactId: contact.id,
+        companyId
+      },
+      order: [["id", "DESC"]]
+    });
+  }
+
+  if (!ticket) {
+    throw new AppError(
+      "Nenhum atendimento encontrado para este contato",
+      404
+    );
+  }
 
   const tagName = String(tag).trim();
 

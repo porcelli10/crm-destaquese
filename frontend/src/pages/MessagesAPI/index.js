@@ -446,9 +446,10 @@ const MessagesAPI = () => {
             <p>Aplica uma tag ao atendimento do contato informado. Se a tag não existir, ela é criada automaticamente.</p>
             <b>Endpoint: </b> {getTagEndpoint()} <br />
             <b>{i18n.t('messagesAPI.labels.method2')}: </b> POST <br />
-            <b>Headers: </b> Authorization (Bearer token) {i18n.t('messagesAPI.labels.e')} Content-Type (application/json) <br />
+            <b>Headers: </b> Authorization (Bearer + token da conexão) {i18n.t('messagesAPI.labels.e')} Content-Type (application/json) <br />
             <b>Body: </b> {"{ \"number\": \"5599999999999\", \"tag\": \"Cliente VIP\" }"} <br />
-            <b>Opcional: </b> {"\"color\": \"#FF8800\""} (cor da tag, caso seja criada)
+            <b>Opcional: </b> {"\"color\": \"#FF8800\""} (cor da tag, caso seja criada) <br />
+            <small><b>Token:</b> use o token da <b>conexão do WhatsApp</b> (menu Conexões), o mesmo usado no envio de mensagens. Não é o login do usuário.</small>
           </Typography>
         </Grid>
         <Grid item xs={12} sm={6}>

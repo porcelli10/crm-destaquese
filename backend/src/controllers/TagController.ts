@@ -128,8 +128,12 @@ export const syncTags = async (
   return res.json(tags);
 };
 
-// API externa (autenticada pelo token do WhatsApp via tokenAuth):
-// atribui uma tag ao atendimento de um contato identificado pelo numero.
+// API externa: atribui uma tag ao atendimento de um contato identificado
+// pelo numero.
+// Autenticacao (middleware tokenAuth): header "Authorization: Bearer <TOKEN>",
+// onde <TOKEN> e o TOKEN DA CONEXAO do WhatsApp (tela de Conexoes). O tokenAuth
+// resolve a conexao pelo token e injeta o whatsappId — por isso ele NAO vai na
+// URL nem no body.
 export const addTagApi = async (
   req: Request,
   res: Response

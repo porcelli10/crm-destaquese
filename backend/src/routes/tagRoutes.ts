@@ -6,7 +6,10 @@ import * as TagController from "../controllers/TagController";
 
 const tagRoutes = express.Router();
 
-// API externa: atribui uma tag a um contato pelo numero (auth via token do WhatsApp)
+// API externa: atribui uma tag a um contato pelo numero.
+// Autenticacao via header "Authorization: Bearer <TOKEN>", onde <TOKEN> e o
+// token da CONEXAO do WhatsApp (visto na tela de Conexoes do painel) — e o
+// mesmo token que identifica de qual conexao/empresa parte a requisicao.
 tagRoutes.post("/api/tags/add", tokenAuth, TagController.addTagApi);
 
 tagRoutes.get("/tags/list", isAuth, TagController.list);
