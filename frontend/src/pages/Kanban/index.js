@@ -70,6 +70,11 @@ const timeAgo = (dateStr) => {
   return `há ${d}d`;
 };
 
+const formatBRL = (v) => {
+  const n = Number(v) || 0;
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+};
+
 const formatSchedule = (sendAt) => {
   if (!sendAt) return "";
   const d = new Date(sendAt);
@@ -151,6 +156,30 @@ const Kanban = () => {
   const [customFieldsOpen, setCustomFieldsOpen] = useState(false);
   const [customFieldsTicket, setCustomFieldsTicket] = useState({ id: null, name: "" });
 
+  // Valor do negócio (por card)
+  const [valueOpen, setValueOpen] = useState(false);
+  const [valueTicket, setValueTicket] = useState({ id: null, name: "" });
+  const [valueInput, setValueInput] = useState("");
+  const [savingValue, setSavingValue] = useState(false);
+
+  // meta por coluna (total R$ e contagem) para o header
+  const laneMetaRef = useRef({});
+
+  const handleSaveValue = async () => {
+    setSavingValue(true);
+    try {
+      await api.put(`/kanban/tickets/${valueTicket.id}/value`, {
+        value: Number(String(valueInput).replace(",", ".")) || 0,
+      });
+      setValueOpen(false);
+      await fetchTickets(jsonString);
+    } catch (err) {
+      toast.error("Não foi possível salvar o valor.");
+    } finally {
+      setSavingValue(false);
+    }
+  };
+
   // header customizado da coluna precisa sempre do handler mais recente
   const openAutomationsRef = useRef(() => {});
   openAutomationsRef.current = (lane) => {
@@ -161,33 +190,38 @@ const Kanban = () => {
 
   // LaneHeader estável (criado uma vez) com engrenagem por coluna
   const CustomLaneHeader = useMemo(
-    () => (props) => (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "6px 4px",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontWeight: 700 }}>{props.title}</span>
-          <span style={{ opacity: 0.85, fontSize: "0.8rem" }}>
-            {props.label}
-          </span>
-        </div>
-        {props.id !== "lane0" && (
-          <IconButton
-            size="small"
-            style={{ color: "inherit", padding: 2 }}
-            title="Automações da coluna"
-            onClick={() => openAutomationsRef.current(props)}
+    () => (props) => {
+      const meta = laneMetaRef.current[props.id] || { total: 0, count: 0 };
+      return (
+        <div style={{ padding: "4px 2px 8px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
           >
-            <TuneOutlinedIcon fontSize="small" />
-          </IconButton>
-        )}
-      </div>
-    ),
+            <span style={{ fontWeight: 700 }}>{props.title}</span>
+            {props.id !== "lane0" && (
+              <IconButton
+                size="small"
+                style={{ color: "inherit", padding: 2 }}
+                title="Automações da coluna"
+                onClick={() => openAutomationsRef.current(props)}
+              >
+                <TuneOutlinedIcon fontSize="small" />
+              </IconButton>
+            )}
+          </div>
+          <div style={{ fontSize: "0.78rem", opacity: 0.75 }}>
+            Total: {formatBRL(meta.total)}
+          </div>
+          <div style={{ fontSize: "0.72rem", opacity: 0.6 }}>
+            {meta.count} negócio{meta.count === 1 ? "" : "s"}
+          </div>
+        </div>
+      );
+    },
     []
   );
 
@@ -267,6 +301,25 @@ const Kanban = () => {
       description: (
         <div style={{ fontSize: "0.8rem", lineHeight: 1.5 }}>
           <div style={{ color: "#666" }}>{ticket.contact.number}</div>
+
+          <div style={{ marginTop: 2 }}>
+            <span
+              style={{
+                color: Number(ticket.value) > 0 ? "#159F5B" : "#682EE3",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                setValueTicket({ id: ticket.id, name: ticket.contact.name });
+                setValueInput(
+                  Number(ticket.value) > 0 ? String(ticket.value) : ""
+                );
+                setValueOpen(true);
+              }}
+            >
+              {Number(ticket.value) > 0 ? formatBRL(ticket.value) : "+ Valor"}
+            </span>
+          </div>
 
           {cardFields.agent && (ticket.user?.name || ticket.queue?.name) && (
             <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
@@ -375,12 +428,27 @@ const Kanban = () => {
       href: "/tickets/" + ticket.uuid,
     });
 
+    const sumValues = (arr) =>
+      arr.reduce((s, t) => s + (Number(t.value) || 0), 0);
+
+    const laneMeta = {
+      lane0: {
+        total: sumValues(filteredTickets),
+        count: filteredTickets.length,
+      },
+    };
+
     const lanes = [
       {
         id: "lane0",
         title: i18n.t("kanban.open"),
         label: filteredTickets.length.toString(),
         cards: filteredTickets.map(buildCard),
+        style: {
+          backgroundColor: "#fff",
+          borderTop: "3px solid #159F5B",
+          color: "#222",
+        },
       },
       ...tags.map((tag) => {
         const tagsTickets = tickets.filter((ticket) => {
@@ -388,16 +456,26 @@ const Kanban = () => {
           return tagIds.includes(tag.id);
         });
 
+        laneMeta[tag.id.toString()] = {
+          total: sumValues(tagsTickets),
+          count: tagsTickets.length,
+        };
+
         return {
           id: tag.id.toString(),
           title: tag.name,
           label: tagsTickets.length.toString(),
           cards: tagsTickets.map(buildCard),
-          style: { backgroundColor: tag.color, color: "white" },
+          style: {
+            backgroundColor: "#fff",
+            borderTop: `3px solid ${tag.color || "#999"}`,
+            color: "#222",
+          },
         };
       }),
     ];
 
+    laneMetaRef.current = laneMeta;
     setFile({ lanes });
   };
 
@@ -585,6 +663,37 @@ const Kanban = () => {
         ticketName={customFieldsTicket.name}
         onSaved={() => fetchTickets(jsonString)}
       />
+
+      {/* Dialog: Valor do negócio */}
+      <Dialog open={valueOpen} onClose={() => setValueOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Valor do negócio{valueTicket.name ? ` · ${valueTicket.name}` : ""}</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Valor (R$)"
+            type="number"
+            value={valueInput}
+            onChange={(e) => setValueInput(e.target.value)}
+            variant="outlined"
+            margin="dense"
+            fullWidth
+            autoFocus
+            placeholder="0,00"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setValueOpen(false)} color="secondary">
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleSaveValue}
+            color="primary"
+            variant="contained"
+            disabled={savingValue}
+          >
+            Salvar
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Dialog: Configurar aparência do card */}
       <Dialog open={configOpen} onClose={() => setConfigOpen(false)} maxWidth="xs" fullWidth>

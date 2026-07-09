@@ -44,6 +44,11 @@ class Ticket extends Model<Ticket> {
   @Column
   lastMessage: string;
 
+  // Valor do negócio (R$) exibido no card do Kanban
+  @Default(0)
+  @Column(DataType.DECIMAL(12, 2))
+  value: number;
+
   @Default(false)
   @Column
   isGroup: boolean;

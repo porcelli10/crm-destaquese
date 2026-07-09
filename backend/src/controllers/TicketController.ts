@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { getIO } from "../libs/socket";
+import AppError from "../errors/AppError";
 import Ticket from "../models/Ticket";
 
 import CreateTicketService from "../services/TicketServices/CreateTicketService";
@@ -138,6 +139,26 @@ export const kanbanCard = async (
     uuid: ticket.uuid,
     contact: { id: contact.id, name: contact.name, number: contact.number }
   });
+};
+
+// PUT /kanban/tickets/:ticketId/value — define o valor do negócio do card
+export const setKanbanValue = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { ticketId } = req.params;
+  const { companyId } = req.user;
+  const { value } = req.body as { value: number };
+
+  const ticket = await Ticket.findOne({ where: { id: ticketId, companyId } });
+  if (!ticket) {
+    throw new AppError("ERR_NO_TICKET_FOUND", 404);
+  }
+
+  const parsed = Number(value);
+  await ticket.update({ value: isNaN(parsed) ? 0 : parsed });
+
+  return res.status(200).json({ ticketId: ticket.id, value: ticket.value });
 };
 
 export const kanban = async (req: Request, res: Response): Promise<Response> => {
