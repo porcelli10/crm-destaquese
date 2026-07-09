@@ -12,6 +12,7 @@ import TicketTag from "../../models/TicketTag";
 import { intersection } from "lodash";
 import Whatsapp from "../../models/Whatsapp";
 import Schedule from "../../models/Schedule";
+import TicketCustomField from "../../models/TicketCustomField";
 
 interface Request {
   searchParam?: string;
@@ -245,6 +246,26 @@ const ListTicketsServiceKanban = async ({
 
     tickets.forEach(t =>
       t.setDataValue("nextSchedule" as any, nextByTicket[t.id] || null)
+    );
+
+    // Campos personalizados (preenchidos via API) para exibição no card.
+    const customFields = await TicketCustomField.findAll({
+      where: { ticketId: { [Op.in]: ticketIds } },
+      attributes: ["id", "ticketId", "name", "value"],
+      order: [["id", "ASC"]]
+    });
+
+    const cfByTicket: Record<number, any[]> = {};
+    for (const cf of customFields) {
+      (cfByTicket[cf.ticketId] = cfByTicket[cf.ticketId] || []).push({
+        id: cf.id,
+        name: cf.name,
+        value: cf.value
+      });
+    }
+
+    tickets.forEach(t =>
+      t.setDataValue("customFields" as any, cfByTicket[t.id] || [])
     );
   }
 

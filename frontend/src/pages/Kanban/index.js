@@ -36,6 +36,7 @@ const CARD_FIELDS = [
   { key: "agent", label: "Responsável + fila" },
   { key: "waitTime", label: "Tempo de espera" },
   { key: "tags", label: "Tags + canal" },
+  { key: "customFields", label: "Campos personalizados" },
   { key: "lastMessage", label: "Última mensagem" },
 ];
 
@@ -44,6 +45,7 @@ const DEFAULT_CARD_FIELDS = {
   agent: true,
   waitTime: true,
   tags: true,
+  customFields: true,
   lastMessage: false,
 };
 
@@ -313,6 +315,26 @@ const Kanban = () => {
               ))}
             </div>
           )}
+
+          {cardFields.customFields &&
+            (ticket.customFields || []).length > 0 && (
+              <div
+                style={{
+                  marginTop: 6,
+                  paddingTop: 6,
+                  borderTop: "1px dashed #E0E0E0",
+                }}
+              >
+                {ticket.customFields.map((cf) => (
+                  <div key={cf.id} style={{ display: "flex", gap: 4 }}>
+                    <span style={{ color: "#888", fontWeight: 600 }}>
+                      {cf.name}:
+                    </span>
+                    <span>{cf.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
           {cardFields.lastMessage && ticket.lastMessage && (
             <div style={{ marginTop: 6, color: "#777", fontStyle: "italic" }}>

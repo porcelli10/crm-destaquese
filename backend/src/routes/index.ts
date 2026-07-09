@@ -40,6 +40,7 @@ import embeddedSignupRoutes from "./embeddedSignupRoutes";
 import hubWebhookRoutes from "./hubWebhookRoutes";
 import iasolutionWebhookRoutes from "./iasolutionWebhookRoutes";
 import kanbanAutomationRoutes from "./kanbanAutomationRoutes";
+import kanbanCustomFieldRoutes from "./kanbanCustomFieldRoutes";
 const routes = Router();
 
 routes.use(userRoutes);
@@ -92,5 +93,8 @@ routes.use("/iasolution-webhook", iasolutionWebhookRoutes);
 
 // Automações do Kanban (por coluna)
 routes.use(kanbanAutomationRoutes);
+
+// Campos personalizados do card (API externa)
+routes.use(kanbanCustomFieldRoutes);
 
 export default routes;

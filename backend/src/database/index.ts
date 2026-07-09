@@ -38,6 +38,7 @@ import FilesOptions from "../models/FilesOptions";
 import Prompt from "../models/Prompt";
 import QueueIntegrations from "../models/QueueIntegrations";
 import KanbanAutomation from "../models/KanbanAutomation";
+import TicketCustomField from "../models/TicketCustomField";
 import { FlowDefaultModel } from "../models/FlowDefault";
 import { FlowBuilderModel } from "../models/FlowBuilder";
 import { FlowAudioModel } from "../models/FlowAudio";
@@ -90,6 +91,7 @@ const models = [
   Prompt,
   QueueIntegrations,
   KanbanAutomation,
+  TicketCustomField,
   FlowDefaultModel,
   FlowBuilderModel,
   FlowAudioModel,
