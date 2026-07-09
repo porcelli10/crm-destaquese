@@ -17,8 +17,65 @@ import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
+import Chip from "@material-ui/core/Chip";
+import IconButton from "@material-ui/core/IconButton";
+import Tooltip from "@material-ui/core/Tooltip";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Switch from "@material-ui/core/Switch";
 import ViewColumnOutlinedIcon from "@material-ui/icons/ViewColumnOutlined";
 import PersonAddOutlinedIcon from "@material-ui/icons/PersonAddOutlined";
+import TuneOutlinedIcon from "@material-ui/icons/TuneOutlined";
+import EventOutlinedIcon from "@material-ui/icons/EventOutlined";
+import PersonOutlineOutlinedIcon from "@material-ui/icons/PersonOutlineOutlined";
+import AccessTimeOutlinedIcon from "@material-ui/icons/AccessTimeOutlined";
+
+// Campos configuráveis do card do Kanban (config salva na empresa via Settings)
+const CARD_FIELDS = [
+  { key: "schedule", label: "Agendamentos" },
+  { key: "agent", label: "Responsável + fila" },
+  { key: "waitTime", label: "Tempo de espera" },
+  { key: "tags", label: "Tags + canal" },
+  { key: "lastMessage", label: "Última mensagem" },
+];
+
+const DEFAULT_CARD_FIELDS = {
+  schedule: true,
+  agent: true,
+  waitTime: true,
+  tags: true,
+  lastMessage: false,
+};
+
+const CHANNEL_LABEL = {
+  iasolution: "iaSolution",
+  official: "Oficial",
+  baileys: "WhatsApp",
+  hub: "Hub",
+};
+
+// "há 3d", "há 2h", "há 15min", "agora"
+const timeAgo = (dateStr) => {
+  if (!dateStr) return "";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return "agora";
+  if (min < 60) return `há ${min}min`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `há ${h}h`;
+  const d = Math.floor(h / 24);
+  return `há ${d}d`;
+};
+
+const formatSchedule = (sendAt) => {
+  if (!sendAt) return "";
+  const d = new Date(sendAt);
+  return d.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -77,7 +134,44 @@ const Kanban = () => {
   const [cardTagId, setCardTagId] = useState("");
   const [savingCard, setSavingCard] = useState(false);
 
+  // Config de aparência do card (empresa toda, via Settings)
+  const [cardFields, setCardFields] = useState(DEFAULT_CARD_FIELDS);
+  const [configOpen, setConfigOpen] = useState(false);
+  const [savingConfig, setSavingConfig] = useState(false);
+
   const [file, setFile] = useState({ lanes: [] });
+
+  const fetchCardConfig = async () => {
+    try {
+      const { data } = await api.get("/settings");
+      const setting = (data || []).find((s) => s.key === "kanbanCardFields");
+      if (setting?.value) {
+        setCardFields({ ...DEFAULT_CARD_FIELDS, ...JSON.parse(setting.value) });
+      }
+    } catch (err) {
+      // mantém o default se não houver config
+    }
+  };
+
+  useEffect(() => {
+    fetchCardConfig();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSaveConfig = async () => {
+    setSavingConfig(true);
+    try {
+      await api.put("/settings/kanbanCardFields", {
+        value: JSON.stringify(cardFields),
+      });
+      toast.success("Aparência do card salva!");
+      setConfigOpen(false);
+    } catch (err) {
+      toast.error("Não foi possível salvar a configuração.");
+    } finally {
+      setSavingConfig(false);
+    }
+  };
 
   const fetchTickets = async (queueIds) => {
     try {
@@ -119,14 +213,73 @@ const Kanban = () => {
       id: ticket.id.toString(),
       label: "Ticket nº " + ticket.id.toString(),
       description: (
-        <div>
-          <p>
-            {ticket.contact.number}
-            <br />
-            {ticket.lastMessage}
-          </p>
+        <div style={{ fontSize: "0.8rem", lineHeight: 1.5 }}>
+          <div style={{ color: "#666" }}>{ticket.contact.number}</div>
+
+          {cardFields.agent && (ticket.user?.name || ticket.queue?.name) && (
+            <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
+              <PersonOutlineOutlinedIcon style={{ fontSize: 15, color: "#888" }} />
+              <span>
+                {ticket.user?.name || "Sem responsável"}
+                {ticket.queue?.name ? ` · ${ticket.queue.name}` : ""}
+              </span>
+            </div>
+          )}
+
+          {cardFields.waitTime && (
+            <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, color: "#888" }}>
+              <AccessTimeOutlinedIcon style={{ fontSize: 15 }} />
+              <span>Atualizado {timeAgo(ticket.updatedAt)}</span>
+            </div>
+          )}
+
+          {cardFields.schedule && ticket.nextSchedule && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                marginTop: 4,
+                color: "#682EE3",
+                fontWeight: 600,
+              }}
+            >
+              <EventOutlinedIcon style={{ fontSize: 15 }} />
+              <span>{formatSchedule(ticket.nextSchedule.sendAt)}</span>
+            </div>
+          )}
+
+          {cardFields.tags && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
+              {ticket.whatsapp?.channel && (
+                <Chip
+                  size="small"
+                  label={CHANNEL_LABEL[ticket.whatsapp.channel] || ticket.whatsapp.channel}
+                  style={{ height: 20, fontSize: "0.68rem", background: "#EEE" }}
+                />
+              )}
+              {(ticket.tags || []).map((t) => (
+                <Chip
+                  key={t.id}
+                  size="small"
+                  label={t.name}
+                  style={{ height: 20, fontSize: "0.68rem", background: t.color || "#999", color: "#fff" }}
+                />
+              ))}
+            </div>
+          )}
+
+          {cardFields.lastMessage && ticket.lastMessage && (
+            <div style={{ marginTop: 6, color: "#777", fontStyle: "italic" }}>
+              {ticket.lastMessage.length > 60
+                ? ticket.lastMessage.slice(0, 60) + "…"
+                : ticket.lastMessage}
+            </div>
+          )}
+
           <button
             className={classes.button}
+            style={{ marginTop: 8 }}
             onClick={() => {
               handleCardClick(ticket.uuid);
             }}
@@ -173,7 +326,7 @@ const Kanban = () => {
   useEffect(() => {
     popularCards();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tags, tickets]);
+  }, [tags, tickets, cardFields]);
 
   const handleCardMove = async (cardId, sourceLaneId, targetLaneId) => {
     try {
@@ -262,6 +415,12 @@ const Kanban = () => {
         >
           Novo card
         </Button>
+        <div style={{ flex: 1 }} />
+        <Tooltip title="Configurar aparência do card">
+          <IconButton color="primary" onClick={() => setConfigOpen(true)}>
+            <TuneOutlinedIcon />
+          </IconButton>
+        </Tooltip>
       </div>
 
       <div className={classes.boardWrap}>
@@ -303,6 +462,49 @@ const Kanban = () => {
           </Button>
           <Button onClick={handleCreateColumn} color="primary" variant="contained" disabled={savingColumn}>
             Criar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog: Configurar aparência do card */}
+      <Dialog open={configOpen} onClose={() => setConfigOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Aparência do card</DialogTitle>
+        <DialogContent>
+          <p style={{ marginTop: 0, color: "#777", fontSize: "0.85rem" }}>
+            Escolha quais informações aparecem nos cards do pipeline (vale para
+            toda a empresa).
+          </p>
+          {CARD_FIELDS.map((f) => (
+            <div key={f.key}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    color="primary"
+                    checked={!!cardFields[f.key]}
+                    onChange={(e) =>
+                      setCardFields((prev) => ({
+                        ...prev,
+                        [f.key]: e.target.checked,
+                      }))
+                    }
+                  />
+                }
+                label={f.label}
+              />
+            </div>
+          ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfigOpen(false)} color="secondary">
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleSaveConfig}
+            color="primary"
+            variant="contained"
+            disabled={savingConfig}
+          >
+            Salvar
           </Button>
         </DialogActions>
       </Dialog>

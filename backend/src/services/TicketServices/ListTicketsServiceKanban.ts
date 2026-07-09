@@ -11,6 +11,7 @@ import Tag from "../../models/Tag";
 import TicketTag from "../../models/TicketTag";
 import { intersection } from "lodash";
 import Whatsapp from "../../models/Whatsapp";
+import Schedule from "../../models/Schedule";
 
 interface Request {
   searchParam?: string;
@@ -77,7 +78,7 @@ const ListTicketsServiceKanban = async ({
     {
       model: Whatsapp,
       as: "whatsapp",
-      attributes: ["name"]
+      attributes: ["name", "channel"]
     },
   ];
 
@@ -222,6 +223,30 @@ const ListTicketsServiceKanban = async ({
     order: [["updatedAt", "DESC"]],
     subQuery: false
   });
+
+  // Anexa o próximo agendamento (mensagem futura ainda não enviada) de cada
+  // ticket, para exibição no card do Kanban.
+  const ticketIds = tickets.map(t => t.id);
+  if (ticketIds.length) {
+    const schedules = await Schedule.findAll({
+      where: {
+        ticketId: { [Op.in]: ticketIds },
+        sentAt: { [Op.is]: null },
+        sendAt: { [Op.gte]: new Date() }
+      },
+      attributes: ["id", "ticketId", "body", "sendAt"],
+      order: [["sendAt", "ASC"]]
+    });
+
+    const nextByTicket: Record<number, Schedule> = {};
+    for (const s of schedules) {
+      if (!nextByTicket[s.ticketId]) nextByTicket[s.ticketId] = s; // asc => o mais próximo
+    }
+
+    tickets.forEach(t =>
+      t.setDataValue("nextSchedule" as any, nextByTicket[t.id] || null)
+    );
+  }
 
   return {
     tickets,
