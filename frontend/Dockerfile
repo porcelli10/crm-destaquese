@@ -9,11 +9,13 @@ RUN npm install -g serve
 
 COPY frontend/package*.json ./
 COPY frontend/yarn.lock ./
-COPY frontend/ .
 
-# Instala as dependencias dentro da imagem. Antes o Dockerfile copiava
-# node_modules do contexto, o que quebra em build a partir de clone limpo (EasyPanel).
+# Instala as dependencias ANTES de copiar o codigo-fonte. Assim o layer do
+# yarn install fica em cache entre builds e so re-roda quando package.json /
+# yarn.lock mudam (economiza ~1 min por build).
 RUN yarn install --network-timeout 600000
+
+COPY frontend/ .
 
 RUN rm -f .env 
 

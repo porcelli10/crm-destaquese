@@ -13,11 +13,9 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN rm -f package-lock.json
 
 COPY backend/package*.json ./
-COPY backend/ .
 
-# Instala as dependencias dentro da imagem (inclui notificamehubsdk).
-# Antes o Dockerfile copiava node_modules do contexto, o que quebra em build a
-# partir de um clone limpo do Git (ex.: EasyPanel).
+# Instala as dependencias ANTES de copiar o codigo-fonte, para cachear o layer
+# entre builds (so re-roda quando package.json muda). Economiza ~1 min/build.
 RUN yarn install --network-timeout 600000
 
 # Configure git to use HTTPS instead of SSH
@@ -29,6 +27,9 @@ RUN yarn add fluent-ffmpeg @ffmpeg-installer/ffmpeg
 # upload multipart. Instaladas aqui para garantir presença mesmo que não estejam
 # no node_modules copiado.
 RUN yarn add axios form-data
+
+# Codigo-fonte por ultimo: so este layer invalida quando o codigo muda.
+COPY backend/ .
 
 COPY certificates ./certs-temp
 
