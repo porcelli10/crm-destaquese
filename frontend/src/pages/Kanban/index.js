@@ -90,6 +90,13 @@ const formatSchedule = (sendAt) => {
 };
 
 const useStyles = makeStyles((theme) => ({
+  // Faz a área que aceita soltar cards preencher a coluna inteira (antes o
+  // drop-zone era só a altura dos cards, então só pegava perto do topo).
+  "@global": {
+    ".react-trello-lane .smooth-dnd-container": {
+      minHeight: "70vh",
+    },
+  },
   container: {
     display: "flex",
     flexDirection: "column",
