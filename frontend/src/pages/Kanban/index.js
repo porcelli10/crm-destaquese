@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef, useMemo } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import api from "../../services/api";
 import { AuthContext } from "../../context/Auth/AuthContext";
@@ -25,6 +25,7 @@ import Switch from "@material-ui/core/Switch";
 import ViewColumnOutlinedIcon from "@material-ui/icons/ViewColumnOutlined";
 import PersonAddOutlinedIcon from "@material-ui/icons/PersonAddOutlined";
 import TuneOutlinedIcon from "@material-ui/icons/TuneOutlined";
+import KanbanAutomationsModal from "../../components/KanbanAutomationsModal";
 import EventOutlinedIcon from "@material-ui/icons/EventOutlined";
 import PersonOutlineOutlinedIcon from "@material-ui/icons/PersonOutlineOutlined";
 import AccessTimeOutlinedIcon from "@material-ui/icons/AccessTimeOutlined";
@@ -138,6 +139,50 @@ const Kanban = () => {
   const [cardFields, setCardFields] = useState(DEFAULT_CARD_FIELDS);
   const [configOpen, setConfigOpen] = useState(false);
   const [savingConfig, setSavingConfig] = useState(false);
+
+  // Automações por coluna
+  const [automationsOpen, setAutomationsOpen] = useState(false);
+  const [automationsTag, setAutomationsTag] = useState({ id: null, name: "" });
+
+  // header customizado da coluna precisa sempre do handler mais recente
+  const openAutomationsRef = useRef(() => {});
+  openAutomationsRef.current = (lane) => {
+    if (!lane || lane.id === "lane0") return;
+    setAutomationsTag({ id: lane.id, name: lane.title });
+    setAutomationsOpen(true);
+  };
+
+  // LaneHeader estável (criado uma vez) com engrenagem por coluna
+  const CustomLaneHeader = useMemo(
+    () => (props) => (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "6px 4px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontWeight: 700 }}>{props.title}</span>
+          <span style={{ opacity: 0.85, fontSize: "0.8rem" }}>
+            {props.label}
+          </span>
+        </div>
+        {props.id !== "lane0" && (
+          <IconButton
+            size="small"
+            style={{ color: "inherit", padding: 2 }}
+            title="Automações da coluna"
+            onClick={() => openAutomationsRef.current(props)}
+          >
+            <TuneOutlinedIcon fontSize="small" />
+          </IconButton>
+        )}
+      </div>
+    ),
+    []
+  );
 
   const [file, setFile] = useState({ lanes: [] });
 
@@ -334,6 +379,18 @@ const Kanban = () => {
       toast.success(i18n.t("kanban.toasts.removed"));
       await api.put(`/ticket-tags/${targetLaneId}/${sourceLaneId}`);
       toast.success(i18n.t("kanban.toasts.added"));
+
+      // dispara automações "ao entrar na coluna" (best-effort)
+      if (targetLaneId && targetLaneId !== "lane0") {
+        try {
+          await api.post("/kanban-automations/trigger", {
+            ticketId: cardId,
+            tagId: targetLaneId,
+          });
+        } catch (e) {
+          // não bloqueia o move
+        }
+      }
     } catch (err) {
       console.log(err);
     }
@@ -427,6 +484,7 @@ const Kanban = () => {
         <Board
           data={file}
           onCardMoveAcrossLanes={handleCardMove}
+          components={{ LaneHeader: CustomLaneHeader }}
           style={{ backgroundColor: "transparent", height: "100%" }}
         />
       </div>
@@ -465,6 +523,15 @@ const Kanban = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Dialog: Automações da coluna */}
+      <KanbanAutomationsModal
+        open={automationsOpen}
+        onClose={() => setAutomationsOpen(false)}
+        tagId={automationsTag.id}
+        tagName={automationsTag.name}
+        tags={tags}
+      />
 
       {/* Dialog: Configurar aparência do card */}
       <Dialog open={configOpen} onClose={() => setConfigOpen(false)} maxWidth="xs" fullWidth>

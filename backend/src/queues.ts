@@ -28,6 +28,7 @@ import FilesOptions from './models/FilesOptions';
 import { addSeconds, differenceInSeconds } from "date-fns";
 import formatBody from "./helpers/Mustache";
 import { ClosedAllOpenTickets } from "./services/WbotServices/wbotClosedTickets";
+import RunIdleAutomationsService from "./services/KanbanAutomationServices/RunIdleAutomationsService";
 
 
 const nodemailer = require('nodemailer');
@@ -73,6 +74,11 @@ export const sendScheduledMessages = new BullQueue(
 );
 
 export const campaignQueue = new BullQueue("CampaignQueue", connection);
+
+export const kanbanAutomationMonitor = new BullQueue(
+  "KanbanAutomationMonitor",
+  connection
+);
 
 async function handleSendMessage(job) {
   try {
@@ -977,6 +983,14 @@ handleCloseTicketsAutomatic()
 
 handleInvoiceCreate()
 
+async function handleKanbanIdleAutomations() {
+  try {
+    await RunIdleAutomationsService();
+  } catch (e: any) {
+    logger.error(`KanbanAutomationMonitor error: ${e?.message || e}`);
+  }
+}
+
 export async function startQueueProcess() {
 
   logger.info("[🏁] - Iniciando processamento de filas");
@@ -989,6 +1003,8 @@ export async function startQueueProcess() {
 
   userMonitor.process("VerifyLoginStatus", handleLoginStatus);
 
+
+  kanbanAutomationMonitor.process("VerifyIdle", handleKanbanIdleAutomations);
 
   campaignQueue.process("VerifyCampaigns", 1, handleVerifyCampaigns);
 
@@ -1058,6 +1074,16 @@ export async function startQueueProcess() {
     {},
     {
       repeat: { cron: "* * * * *", key: "verify-login" },
+      removeOnComplete: true
+    }
+  );
+
+  // Automações "card parado X dias": verifica a cada 30 minutos.
+  kanbanAutomationMonitor.add(
+    "VerifyIdle",
+    {},
+    {
+      repeat: { cron: "*/30 * * * *", key: "verify-kanban-idle" },
       removeOnComplete: true
     }
   );

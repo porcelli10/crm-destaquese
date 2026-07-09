@@ -37,6 +37,7 @@ import Files from "../models/Files";
 import FilesOptions from "../models/FilesOptions";
 import Prompt from "../models/Prompt";
 import QueueIntegrations from "../models/QueueIntegrations";
+import KanbanAutomation from "../models/KanbanAutomation";
 import { FlowDefaultModel } from "../models/FlowDefault";
 import { FlowBuilderModel } from "../models/FlowBuilder";
 import { FlowAudioModel } from "../models/FlowAudio";
@@ -88,6 +89,7 @@ const models = [
   FilesOptions,
   Prompt,
   QueueIntegrations,
+  KanbanAutomation,
   FlowDefaultModel,
   FlowBuilderModel,
   FlowAudioModel,

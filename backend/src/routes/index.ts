@@ -39,6 +39,7 @@ import officialTemplateRoutes from "./officialTemplateRoutes";
 import embeddedSignupRoutes from "./embeddedSignupRoutes";
 import hubWebhookRoutes from "./hubWebhookRoutes";
 import iasolutionWebhookRoutes from "./iasolutionWebhookRoutes";
+import kanbanAutomationRoutes from "./kanbanAutomationRoutes";
 const routes = Router();
 
 routes.use(userRoutes);
@@ -88,5 +89,8 @@ routes.use("/hub-webhook", hubWebhookRoutes);   // Webhook cadastrado no painel 
 
 // iaSolution Hub (WhatsApp Cloud API) — URL inclui o id da conexão
 routes.use("/iasolution-webhook", iasolutionWebhookRoutes);
+
+// Automações do Kanban (por coluna)
+routes.use(kanbanAutomationRoutes);
 
 export default routes;
