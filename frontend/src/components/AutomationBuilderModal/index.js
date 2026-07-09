@@ -35,18 +35,12 @@ const TRIGGER_TYPES = [
 const ACTION_TYPES = [
   { value: "message", label: "Enviar Mensagem" },
   { value: "template", label: "Enviar Template de Mensagem" },
-  { value: "funnel", label: "Enviar Funil", soon: true },
-  { value: "creative", label: "Enviar Criativo", soon: true },
   { value: "move_column", label: "Mudar de Coluna" },
   { value: "add_tag", label: "Adicionar Tag" },
   { value: "remove_tag", label: "Remover Tag" },
-  { value: "ai_link", label: "Vincular Agente de IA", soon: true },
-  { value: "ai_unlink", label: "Remover Agente de IA", soon: true },
   { value: "assign_user", label: "Vincular Responsável" },
   { value: "create_activity", label: "Criar Atividade" },
   { value: "delay", label: "Aguardar (Delay)" },
-  { value: "duplicate", label: "Duplicar Negócio", soon: true },
-  { value: "conversion", label: "Disparar Conversão", soon: true },
 ];
 
 const isTimeTrigger = (t) =>
