@@ -206,6 +206,9 @@ const CardDetailsModal = ({ open, onClose, ticket, onChanged, onOpenTicket }) =>
                 variant="outlined"
                 margin="dense"
                 fullWidth
+                multiline
+                minRows={1}
+                maxRows={8}
               />
               <IconButton size="small" title="Salvar" onClick={() => handleSaveField(f)}>
                 <SaveOutlinedIcon fontSize="small" />
@@ -237,6 +240,9 @@ const CardDetailsModal = ({ open, onClose, ticket, onChanged, onOpenTicket }) =>
             variant="outlined"
             margin="dense"
             style={{ flex: 1 }}
+            multiline
+            minRows={1}
+            maxRows={6}
           />
         </div>
         <Button onClick={handleAdd} color="primary" variant="contained" style={{ marginTop: 8 }}>
