@@ -13,6 +13,7 @@ import SimpleListService from "../services/TagServices/SimpleListService";
 import SyncTagService from "../services/TagServices/SyncTagsService";
 import KanbanListService from "../services/TagServices/KanbanListService";
 import AddTagToContactService from "../services/TagServices/AddTagToContactService";
+import RemoveTagFromContactService from "../services/TagServices/RemoveTagFromContactService";
 
 type IndexQuery = {
   searchParam?: string;
@@ -196,5 +197,34 @@ export const addTagApi = async (
       name: result.tag.name,
       color: result.tag.color
     }
+  });
+};
+
+// API externa (token da CONEXÃO via tokenAuth): remove uma tag do atendimento
+// de um contato identificado pelo número.
+export const removeTagApi = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { whatsappId } = req.params as unknown as { whatsappId: number };
+  const { number, tag } = req.body as { number: string; tag: string };
+
+  const result = await RemoveTagFromContactService({
+    whatsappId,
+    number,
+    tag
+  });
+
+  return res.status(200).json({
+    message: result.removed
+      ? "Tag removida com sucesso"
+      : "A tag não estava aplicada a este atendimento",
+    ticketId: result.ticket.id,
+    contact: {
+      id: result.contact.id,
+      number: result.contact.number,
+      name: result.contact.name
+    },
+    removed: result.removed
   });
 };

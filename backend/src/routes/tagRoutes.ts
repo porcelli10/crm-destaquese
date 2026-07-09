@@ -12,6 +12,9 @@ const tagRoutes = express.Router();
 // mesmo token que identifica de qual conexao/empresa parte a requisicao.
 tagRoutes.post("/api/tags/add", tokenAuth, TagController.addTagApi);
 
+// API externa: remove uma tag do atendimento de um contato pelo numero.
+tagRoutes.post("/api/tags/remove", tokenAuth, TagController.removeTagApi);
+
 tagRoutes.get("/tags/list", isAuth, TagController.list);
 
 tagRoutes.get("/tags", isAuth, TagController.index);

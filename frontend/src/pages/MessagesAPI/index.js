@@ -449,6 +449,7 @@ const MessagesAPI = () => {
             <b>Headers: </b> Authorization (Bearer + token da conexão) {i18n.t('messagesAPI.labels.e')} Content-Type (application/json) <br />
             <b>Body: </b> {"{ \"number\": \"5599999999999\", \"tag\": \"Cliente VIP\" }"} <br />
             <b>Opcional: </b> {"\"color\": \"#FF8800\""} (cor da tag, caso seja criada) <br />
+            <b>Remover tag: </b> POST {process.env.REACT_APP_BACKEND_URL + '/api/tags/remove'} com {"{ \"number\": \"5599999999999\", \"tag\": \"Cliente VIP\" }"} <br />
             <small><b>Token:</b> use o token da <b>conexão do WhatsApp</b> (menu Conexões), o mesmo usado no envio de mensagens. Não é o login do usuário.</small>
           </Typography>
         </Grid>
