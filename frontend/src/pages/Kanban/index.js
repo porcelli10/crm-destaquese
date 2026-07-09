@@ -393,8 +393,13 @@ const Kanban = () => {
   }, [socketManager]);
 
   const popularCards = () => {
+    // "Aberto" (lane0): tickets que NÃO estão em nenhuma coluna do Kanban.
+    // Antes filtrava por tags.length === 0, então um ticket com uma tag comum
+    // (não-kanban) sumia do board. Agora consideramos só as tags de coluna.
+    const kanbanTagIds = tags.map((t) => t.id);
     const filteredTickets = tickets.filter(
-      (ticket) => ticket.tags.length === 0
+      (ticket) =>
+        !(ticket.tags || []).some((t) => kanbanTagIds.includes(t.id))
     );
 
     const buildCard = (ticket) => ({
@@ -619,10 +624,13 @@ const Kanban = () => {
     const ticketId = targetLaneId; // id real do ticket
     const destinationTagId = sourceLaneId; // coluna de destino
     try {
+      // remove as tags de coluna (kanban) atuais do ticket
       await api.delete(`/ticket-tags/${ticketId}`);
-      toast.success(i18n.t("kanban.toasts.removed"));
-      await api.put(`/ticket-tags/${ticketId}/${destinationTagId}`);
-      toast.success(i18n.t("kanban.toasts.added"));
+      // "Aberto" (lane0) não é uma tag real — só remover já move para lá
+      if (destinationTagId && destinationTagId !== "lane0") {
+        await api.put(`/ticket-tags/${ticketId}/${destinationTagId}`);
+        toast.success(i18n.t("kanban.toasts.added"));
+      }
 
       // dispara automações de entrada (destino) e saída (origem) — best-effort
       if (destinationTagId && destinationTagId !== "lane0") {
