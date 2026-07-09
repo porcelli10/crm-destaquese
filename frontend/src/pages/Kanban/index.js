@@ -28,7 +28,7 @@ import PersonAddOutlinedIcon from "@material-ui/icons/PersonAddOutlined";
 import TuneOutlinedIcon from "@material-ui/icons/TuneOutlined";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import ColumnConfigModal from "../../components/ColumnConfigModal";
-import TicketCustomFieldsModal from "../../components/TicketCustomFieldsModal";
+import CardDetailsModal from "../../components/CardDetailsModal";
 import EventOutlinedIcon from "@material-ui/icons/EventOutlined";
 import PersonOutlineOutlinedIcon from "@material-ui/icons/PersonOutlineOutlined";
 import AccessTimeOutlinedIcon from "@material-ui/icons/AccessTimeOutlined";
@@ -156,9 +156,17 @@ const Kanban = () => {
   const [columnConfigOpen, setColumnConfigOpen] = useState(false);
   const [columnConfigTag, setColumnConfigTag] = useState(null);
 
-  // Campos personalizados do card
-  const [customFieldsOpen, setCustomFieldsOpen] = useState(false);
-  const [customFieldsTicket, setCustomFieldsTicket] = useState({ id: null, name: "" });
+  // Detalhes do card (modal ao clicar no card)
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsTicket, setDetailsTicket] = useState(null);
+
+  const openCardDetails = (cardId) => {
+    const t = tickets.find((x) => String(x.id) === String(cardId));
+    if (t) {
+      setDetailsTicket(t);
+      setDetailsOpen(true);
+    }
+  };
 
   // Valor do negócio (por card)
   const [valueOpen, setValueOpen] = useState(false);
@@ -372,7 +380,8 @@ const Kanban = () => {
                 fontWeight: 700,
                 cursor: "pointer",
               }}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setValueTicket({ id: ticket.id, name: ticket.contact.name });
                 setValueInput(
                   Number(ticket.value) > 0 ? String(ticket.value) : ""
@@ -446,14 +455,36 @@ const Kanban = () => {
                   borderTop: "1px dashed #E0E0E0",
                 }}
               >
-                {ticket.customFields.map((cf) => (
-                  <div key={cf.id} style={{ display: "flex", gap: 4 }}>
+                {ticket.customFields.slice(0, 2).map((cf) => (
+                  <div
+                    key={cf.id}
+                    style={{
+                      display: "flex",
+                      gap: 4,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
                     <span style={{ color: "#888", fontWeight: 600 }}>
                       {cf.name}:
                     </span>
-                    <span>{cf.value}</span>
+                    <span
+                      style={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {cf.value}
+                    </span>
                   </div>
                 ))}
+                {ticket.customFields.length > 2 && (
+                  <div style={{ color: "#682EE3", fontSize: "0.72rem", marginTop: 2 }}>
+                    +{ticket.customFields.length - 2} campo
+                    {ticket.customFields.length - 2 === 1 ? "" : "s"} · clique para ver
+                  </div>
+                )}
               </div>
             )}
 
@@ -465,30 +496,10 @@ const Kanban = () => {
             </div>
           )}
 
-          <button
-            className={classes.button}
-            style={{ marginTop: 8 }}
-            onClick={() => {
-              handleCardClick(ticket.uuid);
-            }}
-          >
-            {i18n.t("kanban.seeTicket")}
-          </button>
-          <button
-            className={classes.button}
-            style={{ marginTop: 8, marginLeft: 6, background: "#8863E6" }}
-            onClick={() => {
-              setCustomFieldsTicket({ id: ticket.id, name: ticket.contact.name });
-              setCustomFieldsOpen(true);
-            }}
-          >
-            Campos
-          </button>
         </div>
       ),
       title: ticket.contact.name,
       draggable: true,
-      href: "/tickets/" + ticket.uuid,
     });
 
     const sumValues = (arr) =>
@@ -670,6 +681,7 @@ const Kanban = () => {
         <Board
           data={file}
           onCardMoveAcrossLanes={handleCardMove}
+          onCardClick={(cardId) => openCardDetails(cardId)}
           components={{ LaneHeader: CustomLaneHeader }}
           style={{ backgroundColor: "transparent", height: "100%" }}
         />
@@ -730,13 +742,13 @@ const Kanban = () => {
         onChanged={() => fetchTags()}
       />
 
-      {/* Dialog: Campos personalizados do card */}
-      <TicketCustomFieldsModal
-        open={customFieldsOpen}
-        onClose={() => setCustomFieldsOpen(false)}
-        ticketId={customFieldsTicket.id}
-        ticketName={customFieldsTicket.name}
-        onSaved={() => fetchTickets(jsonString)}
+      {/* Modal: Detalhes do card */}
+      <CardDetailsModal
+        open={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        ticket={detailsTicket}
+        onChanged={() => fetchTickets(jsonString)}
+        onOpenTicket={(uuid) => handleCardClick(uuid)}
       />
 
       {/* Dialog: Valor do negócio */}
