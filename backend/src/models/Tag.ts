@@ -9,7 +9,8 @@ import {
   BelongsToMany,
   ForeignKey,
   BelongsTo,
-  HasMany
+  HasMany,
+  Default
 } from "sequelize-typescript";
 import Company from "./Company";
 import Ticket from "./Ticket";
@@ -49,6 +50,11 @@ class Tag extends Model<Tag> {
 
   @Column
   kanban: number;
+
+  // Posição da coluna no pipeline do Kanban (ordenação)
+  @Default(0)
+  @Column
+  position: number;
 }
 
 export default Tag;

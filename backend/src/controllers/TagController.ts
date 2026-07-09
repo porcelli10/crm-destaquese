@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { getIO } from "../libs/socket";
 
 import AppError from "../errors/AppError";
+import Tag from "../models/Tag";
 
 import CreateService from "../services/TagServices/CreateService";
 import ListService from "../services/TagServices/ListService";
@@ -114,6 +115,34 @@ export const list = async (req: Request, res: Response): Promise<Response> => {
   const tags = await SimpleListService({ searchParam, companyId });
 
   return res.json(tags);
+};
+
+// PUT /tags/reorder — reordena as colunas do Kanban
+// body: { tagIds: [id1, id2, ...] } na nova ordem
+export const reorder = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { companyId } = req.user;
+  const { tagIds } = req.body as { tagIds: number[] };
+
+  if (!Array.isArray(tagIds)) {
+    throw new AppError("tagIds deve ser um array", 400);
+  }
+
+  for (let i = 0; i < tagIds.length; i++) {
+    await Tag.update(
+      { position: i },
+      { where: { id: tagIds[i], companyId } }
+    );
+  }
+
+  const io = getIO();
+  io.to(`company-${companyId}-mainchannel`).emit("tag", {
+    action: "reorder"
+  });
+
+  return res.json({ message: "Ordem das colunas atualizada" });
 };
 
 export const syncTags = async (

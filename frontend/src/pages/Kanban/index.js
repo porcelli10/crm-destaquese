@@ -602,6 +602,31 @@ const Kanban = () => {
     }
   };
 
+  // Reordenar colunas (arrastar coluna) e persistir a nova ordem
+  const handleLaneMove = async (removedIndex, addedIndex) => {
+    const lanes = [...file.lanes];
+    const [moved] = lanes.splice(removedIndex, 1);
+    lanes.splice(addedIndex, 0, moved);
+
+    const tagIds = lanes
+      .map((l) => l.id)
+      .filter((id) => id !== "lane0")
+      .map((id) => Number(id));
+
+    try {
+      await api.put("/tags/reorder", { tagIds });
+      // reflete a nova ordem no estado local (rebuilda os cards)
+      const reordered = tagIds
+        .map((id) => tags.find((t) => String(t.id) === String(id)))
+        .filter(Boolean);
+      setTags(reordered);
+      toast.success("Ordem das colunas salva!");
+    } catch (err) {
+      toast.error("Não foi possível salvar a ordem das colunas.");
+      await fetchTags();
+    }
+  };
+
   const handleCreateColumn = async () => {
     if (columnName.trim().length < 3) {
       toast.error("O nome da coluna precisa ter pelo menos 3 caracteres.");
@@ -690,6 +715,8 @@ const Kanban = () => {
         <Board
           data={file}
           onCardMoveAcrossLanes={handleCardMove}
+          laneDraggable
+          handleLaneDragEnd={handleLaneMove}
           components={{ LaneHeader: CustomLaneHeader }}
           style={{ backgroundColor: "transparent", height: "100%" }}
         />
