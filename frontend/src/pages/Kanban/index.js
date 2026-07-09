@@ -373,19 +373,26 @@ const Kanban = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tags, tickets, cardFields]);
 
+  // ATENÇÃO react-trello chama onCardMoveAcrossLanes(fromLaneId, toLaneId, cardId).
+  // Portanto os nomes abaixo estão "trocados" em relação ao real:
+  //   cardId        => coluna de ORIGEM (fromLaneId)
+  //   sourceLaneId  => coluna de DESTINO (toLaneId)  -> é a tag a adicionar
+  //   targetLaneId  => id do TICKET (cardId)
   const handleCardMove = async (cardId, sourceLaneId, targetLaneId) => {
+    const ticketId = targetLaneId; // id real do ticket
+    const destinationTagId = sourceLaneId; // coluna de destino
     try {
-      await api.delete(`/ticket-tags/${targetLaneId}`);
+      await api.delete(`/ticket-tags/${ticketId}`);
       toast.success(i18n.t("kanban.toasts.removed"));
-      await api.put(`/ticket-tags/${targetLaneId}/${sourceLaneId}`);
+      await api.put(`/ticket-tags/${ticketId}/${destinationTagId}`);
       toast.success(i18n.t("kanban.toasts.added"));
 
       // dispara automações "ao entrar na coluna" (best-effort)
-      if (targetLaneId && targetLaneId !== "lane0") {
+      if (destinationTagId && destinationTagId !== "lane0") {
         try {
           await api.post("/kanban-automations/trigger", {
-            ticketId: cardId,
-            tagId: targetLaneId,
+            ticketId,
+            tagId: destinationTagId,
           });
         } catch (e) {
           // não bloqueia o move
