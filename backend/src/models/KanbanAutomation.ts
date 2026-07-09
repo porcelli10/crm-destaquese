@@ -36,6 +36,25 @@ class KanbanAutomation extends Model<KanbanAutomation> {
   @BelongsTo(() => Tag)
   tag: Tag;
 
+  @Column
+  name: string;
+
+  @Column(DataType.TEXT)
+  description: string;
+
+  // JSON: array de gatilhos [{ type, ...config }]
+  @Column(DataType.TEXT)
+  triggers: string;
+
+  // JSON: array de ações [{ type, ...config }] (executadas em ordem)
+  @Column(DataType.TEXT)
+  actions: string;
+
+  // JSON: { intervalSeconds, respectBusinessHours, retroactive }
+  @Column(DataType.TEXT)
+  settings: string;
+
+  // ---- Legado (compatibilidade com automações simples) ----
   // "on_enter" | "idle"
   @Column(DataType.STRING)
   trigger: string;

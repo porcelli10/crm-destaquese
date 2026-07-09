@@ -565,12 +565,13 @@ const Kanban = () => {
       await api.put(`/ticket-tags/${ticketId}/${destinationTagId}`);
       toast.success(i18n.t("kanban.toasts.added"));
 
-      // dispara automações "ao entrar na coluna" (best-effort)
+      // dispara automações de entrada (destino) e saída (origem) — best-effort
       if (destinationTagId && destinationTagId !== "lane0") {
         try {
           await api.post("/kanban-automations/trigger", {
             ticketId,
             tagId: destinationTagId,
+            sourceTagId: cardId !== "lane0" ? cardId : undefined,
           });
         } catch (e) {
           // não bloqueia o move

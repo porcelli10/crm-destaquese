@@ -1,93 +1,89 @@
-import axios from "axios";
-import * as Sentry from "@sentry/node";
 import { logger } from "../../utils/logger";
 import KanbanAutomation from "../../models/KanbanAutomation";
-import ShowTicketService from "../TicketServices/ShowTicketService";
-import SendWhatsAppMessage from "../WbotServices/SendWhatsAppMessage";
-import SendTemplateMessageIaSolution from "../IaSolutionServices/SendTemplateMessageIaSolution";
-import SendTemplateMessageOfficial from "../WABAServices/SendTemplateMessageOfficial";
-import formatBody from "../../helpers/Mustache";
+import ExecuteAutomationActionsService from "./ExecuteAutomationActionsService";
+
+export const parseJson = (raw: string): any => {
+  try {
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+// Converte uma automação LEGADA (trigger/action/config) em lista de ações.
+const legacyActions = (auto: KanbanAutomation): any[] => {
+  const cfg = parseJson(auto.config) || {};
+  if (auto.action === "message") return [{ type: "message", body: cfg.body }];
+  if (auto.action === "template")
+    return [
+      {
+        type: "template",
+        templateName: cfg.templateName,
+        languageCode: cfg.languageCode
+      }
+    ];
+  if (auto.action === "webhook")
+    return [{ type: "webhook", webhookUrl: cfg.webhookUrl }];
+  if (auto.action === "move")
+    return [{ type: "move_column", targetTagId: cfg.targetTagId }];
+  return [];
+};
+
+/**
+ * Retorna as ações a executar para um dado evento ("on_enter" | "on_leave"),
+ * ou null se a automação não dispara nesse evento. Suporta o schema novo
+ * (triggers/actions JSON) e o legado (trigger/action/config).
+ */
+export const resolveActionsForEvent = (
+  auto: KanbanAutomation,
+  event: string
+): any[] | null => {
+  const triggers = parseJson(auto.triggers);
+  if (Array.isArray(triggers)) {
+    const hit = triggers.some((t: any) => t && t.type === event);
+    if (!hit) return null;
+    const actions = parseJson(auto.actions);
+    return Array.isArray(actions) ? actions : [];
+  }
+  // Legado: só "on_enter"
+  if (event === "on_enter" && auto.trigger === "on_enter") {
+    return legacyActions(auto);
+  }
+  return null;
+};
 
 interface Request {
   ticketId: number;
   tagId: number;
   companyId: number;
+  /** "on_enter" (padrão) | "on_leave" */
+  event?: string;
 }
 
-const parseConfig = (raw: string): any => {
-  try {
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-};
-
 /**
- * Executa as automações do tipo "on_enter" de uma coluna (tag) para um ticket
- * que acabou de entrar nela. Best-effort: nunca lança (não bloqueia o card).
+ * Executa as automações de uma coluna para um ticket ao entrar/sair dela.
+ * Best-effort: nunca lança (não bloqueia o card).
  */
 const RunEnterAutomationsService = async ({
   ticketId,
   tagId,
-  companyId
+  companyId,
+  event = "on_enter"
 }: Request): Promise<void> => {
   const automations = await KanbanAutomation.findAll({
-    where: { companyId, tagId, trigger: "on_enter", active: true }
+    where: { companyId, tagId, active: true }
   });
-
   if (!automations.length) return;
 
-  let ticket;
-  try {
-    ticket = await ShowTicketService(ticketId, companyId);
-  } catch (err) {
-    logger.error(`KanbanAutomation: ticket ${ticketId} não encontrado`);
-    return;
-  }
-
-  for (const automation of automations) {
-    const config = parseConfig(automation.config);
+  for (const auto of automations) {
+    const actions = resolveActionsForEvent(auto, event);
+    if (!actions) continue;
     try {
-      if (automation.action === "message" && config.body) {
-        await SendWhatsAppMessage({
-          body: formatBody(config.body, ticket),
-          ticket
-        });
-      } else if (automation.action === "template" && config.templateName) {
-        const params = {
-          ticket,
-          templateName: config.templateName,
-          languageCode: config.languageCode || "pt_BR",
-          components: config.components,
-          previewBody: config.previewBody
-        };
-        if (ticket.whatsapp?.channel === "iasolution") {
-          await SendTemplateMessageIaSolution(params);
-        } else {
-          await SendTemplateMessageOfficial(params);
-        }
-      } else if (automation.action === "webhook" && config.webhookUrl) {
-        await axios.post(
-          config.webhookUrl,
-          {
-            event: "kanban.card.entered",
-            tagId,
-            ticketId: ticket.id,
-            ticketUuid: ticket.uuid,
-            number: ticket.contact?.number,
-            contactName: ticket.contact?.name,
-            queueId: ticket.queueId,
-            userId: ticket.userId,
-            companyId
-          },
-          { timeout: 15000 }
-        );
-      }
+      await ExecuteAutomationActionsService(actions, ticketId, companyId);
     } catch (err: any) {
-      Sentry.captureException(err);
       logger.error(
-        `KanbanAutomation on_enter (id ${automation.id}) falhou: ${
-          err?.response?.data?.message || err?.message || err
+        `RunEnterAutomations (${event}, auto ${auto.id}) falhou: ${
+          err?.message || err
         }`
       );
     }

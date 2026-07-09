@@ -250,7 +250,11 @@ const ListTicketsServiceKanban = async ({
 
     // Campos personalizados (preenchidos via API) para exibição no card.
     const customFields = await TicketCustomField.findAll({
-      where: { ticketId: { [Op.in]: ticketIds } },
+      where: {
+        ticketId: { [Op.in]: ticketIds },
+        // "_..." são marcadores internos de automação, não exibidos no card
+        name: { [Op.notLike]: "\\_%" }
+      },
       attributes: ["id", "ticketId", "name", "value"],
       order: [["id", "ASC"]]
     });

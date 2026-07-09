@@ -19,21 +19,50 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
   return res.json(automations);
 };
 
+const asJson = (v: any) =>
+  v === undefined ? undefined : typeof v === "string" ? v : JSON.stringify(v);
+
 // POST /kanban-automations
 export const store = async (req: Request, res: Response): Promise<Response> => {
   const { companyId } = req.user;
-  const { tagId, trigger, action, config, active } = req.body;
+  const {
+    tagId,
+    name,
+    description,
+    triggers,
+    actions,
+    settings,
+    active,
+    // legado
+    trigger,
+    action,
+    config
+  } = req.body;
 
-  if (!tagId || !trigger || !action) {
-    throw new AppError("tagId, trigger e action são obrigatórios", 400);
+  if (!tagId) {
+    throw new AppError("tagId é obrigatório", 400);
+  }
+
+  // Aceita o schema novo (triggers/actions) ou o legado (trigger/action).
+  const isNew = Array.isArray(triggers) || Array.isArray(actions);
+  if (!isNew && (!trigger || !action)) {
+    throw new AppError(
+      "Informe triggers/actions (novo) ou trigger/action (legado)",
+      400
+    );
   }
 
   const automation = await KanbanAutomation.create({
     companyId,
     tagId,
-    trigger,
-    action,
-    config: typeof config === "string" ? config : JSON.stringify(config || {}),
+    name: name || null,
+    description: description || null,
+    triggers: asJson(triggers) || null,
+    actions: asJson(actions) || null,
+    settings: asJson(settings) || null,
+    trigger: trigger || null,
+    action: action || null,
+    config: asJson(config) || null,
     active: active !== false
   } as any);
 
@@ -44,7 +73,17 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 export const update = async (req: Request, res: Response): Promise<Response> => {
   const { companyId } = req.user;
   const { id } = req.params;
-  const { trigger, action, config, active } = req.body;
+  const {
+    name,
+    description,
+    triggers,
+    actions,
+    settings,
+    active,
+    trigger,
+    action,
+    config
+  } = req.body;
 
   const automation = await KanbanAutomation.findOne({
     where: { id, companyId }
@@ -52,11 +91,14 @@ export const update = async (req: Request, res: Response): Promise<Response> => 
   if (!automation) throw new AppError("Automação não encontrada", 404);
 
   await automation.update({
+    ...(name !== undefined && { name }),
+    ...(description !== undefined && { description }),
+    ...(triggers !== undefined && { triggers: asJson(triggers) }),
+    ...(actions !== undefined && { actions: asJson(actions) }),
+    ...(settings !== undefined && { settings: asJson(settings) }),
     ...(trigger !== undefined && { trigger }),
     ...(action !== undefined && { action }),
-    ...(config !== undefined && {
-      config: typeof config === "string" ? config : JSON.stringify(config)
-    }),
+    ...(config !== undefined && { config: asJson(config) }),
     ...(active !== undefined && { active })
   });
 
@@ -85,18 +127,29 @@ export const trigger = async (
   res: Response
 ): Promise<Response> => {
   const { companyId } = req.user;
-  const { ticketId, tagId } = req.body;
+  const { ticketId, tagId, sourceTagId } = req.body;
 
   if (!ticketId || !tagId) {
     throw new AppError("ticketId e tagId são obrigatórios", 400);
   }
 
-  // best-effort: não bloqueia a resposta
+  // Entrada na coluna de destino (best-effort, não bloqueia a resposta)
   RunEnterAutomationsService({
     ticketId: Number(ticketId),
     tagId: Number(tagId),
-    companyId
+    companyId,
+    event: "on_enter"
   });
+
+  // Saída da coluna de origem (se informada)
+  if (sourceTagId && Number(sourceTagId) !== Number(tagId)) {
+    RunEnterAutomationsService({
+      ticketId: Number(ticketId),
+      tagId: Number(sourceTagId),
+      companyId,
+      event: "on_leave"
+    });
+  }
 
   return res.json({ message: "Automações disparadas" });
 };
