@@ -7,7 +7,10 @@ import ShowTicketService from "../services/TicketServices/ShowTicketService";
 import SendTemplateMessageOfficial from "../services/WABAServices/SendTemplateMessageOfficial";
 import { listOfficialTemplates } from "../services/WABAServices/whatsappOfficialApi";
 import SendTemplateMessageIaSolution from "../services/IaSolutionServices/SendTemplateMessageIaSolution";
-import { listIaSolutionTemplates } from "../services/IaSolutionServices/iaSolutionApi";
+import {
+  listIaSolutionTemplates,
+  syncIaSolutionTemplates
+} from "../services/IaSolutionServices/iaSolutionApi";
 import CreateOrUpdateContactService from "../services/ContactServices/CreateOrUpdateContactService";
 import FindOrCreateTicketService from "../services/TicketServices/FindOrCreateTicketService";
 
@@ -133,6 +136,42 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
       err?.response?.data?.error?.message ||
         err?.response?.data?.message ||
         "Não foi possível carregar os templates"
+    );
+  }
+};
+
+/**
+ * Força a sincronização dos templates da conexão e devolve a lista atualizada
+ * (aprovados). Para iasolution, dispara o sync no Hub (busca da Meta); para
+ * official, apenas relista ao vivo da Graph API.
+ * POST /official-templates/:whatsappId/sync
+ */
+export const sync = async (req: Request, res: Response): Promise<Response> => {
+  const { whatsappId } = req.params;
+  const { companyId } = req.user;
+
+  const whatsapp = await Whatsapp.findByPk(whatsappId);
+
+  if (!whatsapp || whatsapp.companyId !== companyId) {
+    throw new AppError("ERR_NO_WAPP_FOUND", 404);
+  }
+
+  if (!TEMPLATE_CHANNELS.includes(whatsapp.channel)) {
+    throw new AppError("Conexão não suporta envio de templates", 400);
+  }
+
+  try {
+    const templates =
+      whatsapp.channel === "iasolution"
+        ? await syncIaSolutionTemplates(whatsapp)
+        : await listOfficialTemplates(whatsapp);
+    const approved = templates.filter((t: any) => t.status === "APPROVED");
+    return res.json(approved);
+  } catch (err: any) {
+    throw new AppError(
+      err?.response?.data?.error?.message ||
+        err?.response?.data?.message ||
+        "Não foi possível sincronizar os templates"
     );
   }
 };

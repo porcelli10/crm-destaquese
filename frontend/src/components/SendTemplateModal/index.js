@@ -45,6 +45,7 @@ const SendTemplateModal = ({ open, onClose, initialNumber }) => {
   const [templateName, setTemplateName] = useState("");
   const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [sending, setSending] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   // carrega conexões oficiais ao abrir
   useEffect(() => {
@@ -88,6 +89,21 @@ const SendTemplateModal = ({ open, onClose, initialNumber }) => {
   }, [whatsappId]);
 
   const selectedTemplate = templates.find((t) => t.name === templateName);
+
+  const handleSync = async () => {
+    if (!whatsappId) return;
+    setSyncing(true);
+    setTemplateName("");
+    try {
+      const { data } = await api.post(`/official-templates/${whatsappId}/sync`);
+      setTemplates(data || []);
+      toast.success("Templates sincronizados!");
+    } catch (err) {
+      toastError(err);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const handleSend = async () => {
     if (!whatsappId || !number || !selectedTemplate) {
@@ -184,6 +200,18 @@ const SendTemplateModal = ({ open, onClose, initialNumber }) => {
         )}
       </DialogContent>
       <DialogActions>
+        <Button
+          onClick={handleSync}
+          color="primary"
+          disabled={!whatsappId || loadingTemplates || syncing}
+          style={{ marginRight: "auto" }}
+        >
+          {syncing ? (
+            <CircularProgress size={18} color="inherit" />
+          ) : (
+            "Sincronizar"
+          )}
+        </Button>
         <Button onClick={onClose} color="secondary" disabled={sending}>
           Cancelar
         </Button>

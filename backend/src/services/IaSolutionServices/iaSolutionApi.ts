@@ -84,6 +84,20 @@ export const listIaSolutionTemplates = async (
 };
 
 /**
+ * Força a sincronização dos templates a partir da Meta e retorna a lista
+ * atualizada no formato do CRM.
+ * POST /templates/sync -> { success, data: { synced_count, templates: [...] } }
+ */
+export const syncIaSolutionTemplates = async (
+  whatsapp: Whatsapp
+): Promise<any[]> => {
+  const client = buildClient(whatsapp);
+  const { data } = await client.post("/templates/sync", {});
+  const templates = data?.data?.templates || [];
+  return templates.map(normalizeTemplate);
+};
+
+/**
  * Envia uma mensagem de template aprovado. Único tipo que pode iniciar conversa
  * fora da janela de 24h. Retorna o message_id (wamid).
  * POST /messages/template

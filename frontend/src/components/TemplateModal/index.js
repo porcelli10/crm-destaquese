@@ -56,6 +56,8 @@ const TemplateModal = ({ open, onClose, ticketId }) => {
   const [templates, setTemplates] = useState([]);
   const [sendingName, setSendingName] = useState(null);
   const [error, setError] = useState("");
+  const [whatsappId, setWhatsappId] = useState(null);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     if (!open || !ticketId) return;
@@ -64,10 +66,11 @@ const TemplateModal = ({ open, onClose, ticketId }) => {
       setLoading(true);
       setError("");
       setTemplates([]);
+      setWhatsappId(null);
       try {
         // descobre a conexão do ticket
         const { data: ticket } = await api.get(`/tickets/${ticketId}`);
-        const whatsappId = ticket?.whatsappId;
+        const wId = ticket?.whatsappId;
 
         const TEMPLATE_CHANNELS = ["official", "iasolution"];
         if (!TEMPLATE_CHANNELS.includes(ticket?.whatsapp?.channel)) {
@@ -77,7 +80,8 @@ const TemplateModal = ({ open, onClose, ticketId }) => {
           return;
         }
 
-        const { data } = await api.get(`/official-templates/${whatsappId}`);
+        setWhatsappId(wId);
+        const { data } = await api.get(`/official-templates/${wId}`);
         setTemplates(data || []);
       } catch (err) {
         toastError(err);
@@ -89,6 +93,20 @@ const TemplateModal = ({ open, onClose, ticketId }) => {
 
     fetchTemplates();
   }, [open, ticketId]);
+
+  const handleSync = async () => {
+    if (!whatsappId) return;
+    setSyncing(true);
+    try {
+      const { data } = await api.post(`/official-templates/${whatsappId}/sync`);
+      setTemplates(data || []);
+      toast.success("Templates sincronizados!");
+    } catch (err) {
+      toastError(err);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const handleSend = async (template) => {
     setSendingName(template.name);
@@ -165,6 +183,18 @@ const TemplateModal = ({ open, onClose, ticketId }) => {
         )}
       </DialogContent>
       <DialogActions>
+        <Button
+          onClick={handleSync}
+          color="primary"
+          disabled={!whatsappId || loading || syncing}
+          style={{ marginRight: "auto" }}
+        >
+          {syncing ? (
+            <CircularProgress size={18} color="inherit" />
+          ) : (
+            "Sincronizar"
+          )}
+        </Button>
         <Button onClick={onClose} color="secondary">
           Fechar
         </Button>

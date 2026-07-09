@@ -23,6 +23,12 @@ officialTemplateRoutes.get(
 );
 
 officialTemplateRoutes.post(
+  "/official-templates/:whatsappId/sync",
+  isAuth,
+  OfficialTemplateController.sync
+);
+
+officialTemplateRoutes.post(
   "/official-templates/:ticketId/send",
   isAuth,
   OfficialTemplateController.send
