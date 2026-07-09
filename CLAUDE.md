@@ -38,8 +38,8 @@ CRM de atendimento via WhatsApp (multi-tenant SaaS), white-label com marca **Des
 
 ## VPS e Deploy
 
-- **IP:** 2.24.81.12 (Hostinger KVM 8, Ubuntu 22.04)
-- **SSH:** `ssh root@2.24.81.12`
+- **IP:** 2.25.169.60 (Hostinger KVM 8, Ubuntu 22.04)
+- **SSH:** `ssh root@2.25.169.60`
 - **Código na VPS:** `/opt/atendimento_destaque_se`
 - **Repositório GitHub:** `git@github.com:porcelli10/crm-destaquese.git` (privado)
 - **Deploy key GitHub:** `/root/.ssh/crm_destaquese` (registrada como deploy key no repo `crm-destaquese`)

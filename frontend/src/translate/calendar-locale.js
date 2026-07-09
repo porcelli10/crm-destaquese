@@ -5,7 +5,7 @@ import "moment/locale/pt-br";
 import { momentLocalizer } from "react-big-calendar";
 
 export const createMomentLocalizer = () => {
-  const savedLanguage = localStorage.getItem("i18nextLng") || "en";
+  const savedLanguage = localStorage.getItem("i18nextLng") || "pt";
   moment.locale(savedLanguage === "pt" ? "pt-br" : savedLanguage);
   return momentLocalizer(moment);
 };
