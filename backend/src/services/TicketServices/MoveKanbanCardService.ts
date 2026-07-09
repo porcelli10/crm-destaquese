@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { getIO } from "../../libs/socket";
+import EmitTicketUpdate from "./EmitTicketUpdate";
 import AppError from "../../errors/AppError";
 import Whatsapp from "../../models/Whatsapp";
 import Contact from "../../models/Contact";
@@ -119,10 +119,8 @@ const MoveKanbanCardService = async ({
     } as any);
   }
 
-  // Atualiza o Kanban em tempo real (o front recarrega ao receber "tag").
-  getIO()
-    .to(`company-${companyId}-mainchannel`)
-    .emit("tag", { action: "update" });
+  // Atualiza Kanban e lista de atendimentos em tempo real.
+  await EmitTicketUpdate(ticket.id, companyId);
 
   // Dispara automações "ao entrar" da coluna destino (best-effort).
   RunEnterAutomationsService({
