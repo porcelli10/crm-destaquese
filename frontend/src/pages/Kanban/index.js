@@ -17,6 +17,7 @@ import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
+import Menu from "@material-ui/core/Menu";
 import Chip from "@material-ui/core/Chip";
 import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
@@ -25,7 +26,8 @@ import Switch from "@material-ui/core/Switch";
 import ViewColumnOutlinedIcon from "@material-ui/icons/ViewColumnOutlined";
 import PersonAddOutlinedIcon from "@material-ui/icons/PersonAddOutlined";
 import TuneOutlinedIcon from "@material-ui/icons/TuneOutlined";
-import KanbanAutomationsModal from "../../components/KanbanAutomationsModal";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
+import ColumnConfigModal from "../../components/ColumnConfigModal";
 import TicketCustomFieldsModal from "../../components/TicketCustomFieldsModal";
 import EventOutlinedIcon from "@material-ui/icons/EventOutlined";
 import PersonOutlineOutlinedIcon from "@material-ui/icons/PersonOutlineOutlined";
@@ -148,9 +150,11 @@ const Kanban = () => {
   const [configOpen, setConfigOpen] = useState(false);
   const [savingConfig, setSavingConfig] = useState(false);
 
-  // Automações por coluna
-  const [automationsOpen, setAutomationsOpen] = useState(false);
-  const [automationsTag, setAutomationsTag] = useState({ id: null, name: "" });
+  // Menu (⋮) e configurações da coluna
+  const [colMenuAnchor, setColMenuAnchor] = useState(null);
+  const [colMenuLane, setColMenuLane] = useState({ id: null, name: "" });
+  const [columnConfigOpen, setColumnConfigOpen] = useState(false);
+  const [columnConfigTag, setColumnConfigTag] = useState(null);
 
   // Campos personalizados do card
   const [customFieldsOpen, setCustomFieldsOpen] = useState(false);
@@ -181,11 +185,70 @@ const Kanban = () => {
   };
 
   // header customizado da coluna precisa sempre do handler mais recente
-  const openAutomationsRef = useRef(() => {});
-  openAutomationsRef.current = (lane) => {
+  const openColumnMenuRef = useRef(() => {});
+  openColumnMenuRef.current = (event, lane) => {
     if (!lane || lane.id === "lane0") return;
-    setAutomationsTag({ id: lane.id, name: lane.title });
-    setAutomationsOpen(true);
+    setColMenuAnchor(event.currentTarget);
+    setColMenuLane({ id: lane.id, name: lane.title });
+  };
+
+  const findTag = (id) => tags.find((t) => String(t.id) === String(id));
+
+  const handleEditColumn = () => {
+    const tag = findTag(colMenuLane.id);
+    if (tag) {
+      setColumnConfigTag({ id: tag.id, name: tag.name, color: tag.color });
+      setColumnConfigOpen(true);
+    }
+    setColMenuAnchor(null);
+  };
+
+  const handleDuplicateColumn = async () => {
+    const tag = findTag(colMenuLane.id);
+    setColMenuAnchor(null);
+    if (!tag) return;
+    try {
+      await api.post("/tags", {
+        name: `${tag.name} (cópia)`,
+        color: tag.color || "#682EE3",
+        kanban: 1,
+      });
+      toast.success("Coluna duplicada!");
+      await fetchTags();
+    } catch (err) {
+      toast.error("Não foi possível duplicar a coluna.");
+    }
+  };
+
+  const handleDownloadCsv = () => {
+    const tag = findTag(colMenuLane.id);
+    setColMenuAnchor(null);
+    if (!tag) return;
+    const rows = tickets.filter((t) =>
+      (t.tags || []).some((x) => x.id === tag.id)
+    );
+    const header = ["Nome", "Numero", "Valor", "Responsavel", "Fila", "Atualizado"];
+    const escape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const lines = rows.map((t) =>
+      [
+        t.contact?.name,
+        t.contact?.number,
+        t.value,
+        t.user?.name || "",
+        t.queue?.name || "",
+        t.updatedAt,
+      ]
+        .map(escape)
+        .join(";")
+    );
+    const csv = [header.join(";"), ...lines].join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `coluna_${tag.name}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // LaneHeader estável (criado uma vez) com engrenagem por coluna
@@ -206,10 +269,10 @@ const Kanban = () => {
               <IconButton
                 size="small"
                 style={{ color: "inherit", padding: 2 }}
-                title="Automações da coluna"
-                onClick={() => openAutomationsRef.current(props)}
+                title="Opções da coluna"
+                onClick={(e) => openColumnMenuRef.current(e, props)}
               >
-                <TuneOutlinedIcon fontSize="small" />
+                <MoreVertIcon fontSize="small" />
               </IconButton>
             )}
           </div>
@@ -646,13 +709,24 @@ const Kanban = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Dialog: Automações da coluna */}
-      <KanbanAutomationsModal
-        open={automationsOpen}
-        onClose={() => setAutomationsOpen(false)}
-        tagId={automationsTag.id}
-        tagName={automationsTag.name}
+      {/* Menu (⋮) da coluna */}
+      <Menu
+        anchorEl={colMenuAnchor}
+        open={Boolean(colMenuAnchor)}
+        onClose={() => setColMenuAnchor(null)}
+      >
+        <MenuItem onClick={handleEditColumn}>Editar coluna</MenuItem>
+        <MenuItem onClick={handleDownloadCsv}>Baixar CSV</MenuItem>
+        <MenuItem onClick={handleDuplicateColumn}>Duplicar coluna</MenuItem>
+      </Menu>
+
+      {/* Modal: Configurações da Coluna (Gerais / Automações / Integrações) */}
+      <ColumnConfigModal
+        open={columnConfigOpen}
+        onClose={() => setColumnConfigOpen(false)}
+        tag={columnConfigTag}
         tags={tags}
+        onChanged={() => fetchTags()}
       />
 
       {/* Dialog: Campos personalizados do card */}
