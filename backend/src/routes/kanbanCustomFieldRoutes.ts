@@ -2,6 +2,7 @@ import express from "express";
 import tokenAuth from "../middleware/tokenAuth";
 import isAuth from "../middleware/isAuth";
 import * as TicketCustomFieldController from "../controllers/TicketCustomFieldController";
+import * as KanbanMoveController from "../controllers/KanbanMoveController";
 
 const kanbanCustomFieldRoutes = express.Router();
 
@@ -11,6 +12,13 @@ kanbanCustomFieldRoutes.post(
   "/api/kanban/custom-fields",
   tokenAuth,
   TicketCustomFieldController.setViaApi
+);
+
+// API externa: move um card para uma coluna do pipeline.
+kanbanCustomFieldRoutes.post(
+  "/api/kanban/move",
+  tokenAuth,
+  KanbanMoveController.moveViaApi
 );
 
 // Uso interno (painel): listar/editar/remover campos de um card.

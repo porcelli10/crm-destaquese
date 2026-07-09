@@ -481,6 +481,28 @@ const MessagesAPI = () => {
           </Typography>
         </Grid>
       </Grid>
+
+      <Typography variant="h6" color="primary" className={classes.elementMargin}>
+        Mover card no pipeline (Kanban)
+      </Typography>
+      <Grid container>
+        <Grid item xs={12}>
+          <Typography className={classes.elementMargin} component="div">
+            <p>
+              Move um card para uma coluna do pipeline. O card é identificado
+              pelo número do contato (atendimento ativo) ou por <code>ticketId</code>;
+              a coluna, pelo nome (<code>column</code>) ou por <code>tagId</code>.
+              Dispara as automações "ao entrar" da coluna de destino.
+            </p>
+            <b>Endpoint: </b> {process.env.REACT_APP_BACKEND_URL + '/api/kanban/move'} <br />
+            <b>{i18n.t('messagesAPI.labels.method2')}: </b> POST <br />
+            <b>Headers: </b> Authorization (Bearer + token da conexão) {i18n.t('messagesAPI.labels.e')} Content-Type (application/json) <br />
+            <b>Body (por nome): </b> {"{ \"number\": \"5599999999999\", \"column\": \"Agendamento\" }"} <br />
+            <b>Body (por id): </b> {"{ \"ticketId\": 123, \"tagId\": 7 }"} <br />
+            <small><b>Token:</b> use o token da <b>conexão do WhatsApp</b> (menu Conexões). Não é o login do usuário.</small>
+          </Typography>
+        </Grid>
+      </Grid>
     </Paper>
   );
 };
