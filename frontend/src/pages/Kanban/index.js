@@ -160,14 +160,6 @@ const Kanban = () => {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailsTicket, setDetailsTicket] = useState(null);
 
-  const openCardDetails = (cardId) => {
-    const t = tickets.find((x) => String(x.id) === String(cardId));
-    if (t) {
-      setDetailsTicket(t);
-      setDetailsOpen(true);
-    }
-  };
-
   // Valor do negócio (por card)
   const [valueOpen, setValueOpen] = useState(false);
   const [valueTicket, setValueTicket] = useState({ id: null, name: "" });
@@ -370,7 +362,13 @@ const Kanban = () => {
       id: ticket.id.toString(),
       label: "Ticket nº " + ticket.id.toString(),
       description: (
-        <div style={{ fontSize: "0.8rem", lineHeight: 1.5 }}>
+        <div
+          style={{ fontSize: "0.8rem", lineHeight: 1.5, cursor: "pointer" }}
+          onClick={() => {
+            setDetailsTicket(ticket);
+            setDetailsOpen(true);
+          }}
+        >
           <div style={{ color: "#666" }}>{ticket.contact.number}</div>
 
           <div style={{ marginTop: 2 }}>
@@ -681,7 +679,6 @@ const Kanban = () => {
         <Board
           data={file}
           onCardMoveAcrossLanes={handleCardMove}
-          onCardClick={(cardId) => openCardDetails(cardId)}
           components={{ LaneHeader: CustomLaneHeader }}
           style={{ backgroundColor: "transparent", height: "100%" }}
         />
