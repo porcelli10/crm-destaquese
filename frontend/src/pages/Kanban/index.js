@@ -714,8 +714,10 @@ const Kanban = () => {
       <div className={classes.boardWrap}>
         <Board
           data={file}
-          onCardMoveAcrossLanes={handleCardMove}
+          draggable
           laneDraggable
+          cardDraggable
+          onCardMoveAcrossLanes={handleCardMove}
           handleLaneDragEnd={handleLaneMove}
           components={{ LaneHeader: CustomLaneHeader }}
           style={{ backgroundColor: "transparent", height: "100%" }}
