@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Op } from "sequelize";
 import { addMinutes } from "date-fns";
+import { getIO } from "../../libs/socket";
 import * as Sentry from "@sentry/node";
 import { logger } from "../../utils/logger";
 import Ticket from "../../models/Ticket";
@@ -160,6 +161,15 @@ const ExecuteAutomationActionsService = async (
         }`
       );
     }
+  }
+
+  // Atualiza o Kanban em tempo real após executar as ações.
+  try {
+    getIO()
+      .to(`company-${companyId}-mainchannel`)
+      .emit("tag", { action: "update" });
+  } catch {
+    // best-effort
   }
 };
 

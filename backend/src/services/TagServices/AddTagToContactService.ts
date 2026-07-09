@@ -1,4 +1,5 @@
 import { Op } from "sequelize";
+import { getIO } from "../../libs/socket";
 import AppError from "../../errors/AppError";
 import Whatsapp from "../../models/Whatsapp";
 import Tag from "../../models/Tag";
@@ -109,6 +110,10 @@ const AddTagToContactService = async ({
       tagId: tagRecord.id
     } as any);
   }
+
+  getIO()
+    .to(`company-${companyId}-mainchannel`)
+    .emit("tag", { action: "update" });
 
   return {
     ticket,

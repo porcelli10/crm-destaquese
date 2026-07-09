@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useRef, useMemo } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import api from "../../services/api";
 import { AuthContext } from "../../context/Auth/AuthContext";
+import { SocketContext } from "../../context/Socket/SocketContext";
 import Board from "react-trello";
 import { toast } from "react-toastify";
 import { i18n } from "../../translate/i18n";
@@ -130,6 +131,8 @@ const Kanban = () => {
   const [tags, setTags] = useState([]);
   const [tickets, setTickets] = useState([]);
   const { user } = useContext(AuthContext);
+  const socketManager = useContext(SocketContext);
+  const refreshTimer = useRef(null);
   const { profile } = user;
   const jsonString = user.queues.map((queue) => queue.UserQueue.queueId);
 
@@ -352,6 +355,35 @@ const Kanban = () => {
     fetchTags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Atualização em tempo real via socket (o Kanban não tinha listener).
+  useEffect(() => {
+    const companyId = localStorage.getItem("companyId");
+    const socket = socketManager.getSocket(companyId);
+
+    // recarrega os cards no máximo a cada 1,5s (evita rajada de eventos)
+    const scheduleTicketsRefresh = () => {
+      if (refreshTimer.current) return;
+      refreshTimer.current = setTimeout(() => {
+        refreshTimer.current = null;
+        fetchTickets(jsonString);
+      }, 1500);
+    };
+
+    const onTicket = () => scheduleTicketsRefresh();
+    const onMessage = () => scheduleTicketsRefresh();
+    const onTag = () => fetchTags(); // muda colunas -> recarrega tudo
+
+    socket.on(`company-${companyId}-ticket`, onTicket);
+    socket.on(`company-${companyId}-appMessage`, onMessage);
+    socket.on("tag", onTag);
+
+    return () => {
+      if (refreshTimer.current) clearTimeout(refreshTimer.current);
+      socket.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socketManager]);
 
   const popularCards = () => {
     const filteredTickets = tickets.filter(
