@@ -30,37 +30,45 @@ const formatBRL = (v) =>
     currency: "BRL",
   });
 
-const formatSchedule = (s) =>
+const formatDate = (s) =>
   s
     ? new Date(s).toLocaleString("pt-BR", {
         day: "2-digit",
         month: "2-digit",
+        year: "2-digit",
         hour: "2-digit",
         minute: "2-digit",
       })
-    : "";
+    : "—";
 
 const Row = ({ label, children }) => (
-  <div style={{ display: "flex", gap: 8, marginBottom: 4 }}>
-    <span style={{ color: "#888", minWidth: 110 }}>{label}:</span>
-    <span style={{ flex: 1 }}>{children}</span>
+  <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+    <span style={{ color: "#888", minWidth: 120 }}>{label}:</span>
+    <span style={{ flex: 1, wordBreak: "break-word" }}>{children}</span>
   </div>
 );
 
 const CardDetailsModal = ({ open, onClose, ticket, onChanged, onOpenTicket }) => {
+  const [full, setFull] = useState(null);
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newName, setNewName] = useState("");
   const [newValue, setNewValue] = useState("");
 
   const ticketId = ticket?.id;
+  // dados: prioriza o que veio da API; cai para o objeto do card
+  const t = full || ticket || {};
 
-  const fetchFields = async () => {
+  const loadAll = async () => {
     if (!ticketId) return;
     setLoading(true);
     try {
-      const { data } = await api.get(`/ticket-custom-fields/${ticketId}`);
-      setFields(data || []);
+      const [ticketRes, fieldsRes] = await Promise.all([
+        api.get(`/tickets/${ticketId}`).catch(() => ({ data: null })),
+        api.get(`/ticket-custom-fields/${ticketId}`).catch(() => ({ data: [] })),
+      ]);
+      if (ticketRes.data) setFull(ticketRes.data);
+      setFields(fieldsRes.data || []);
     } catch (err) {
       toastError(err);
     } finally {
@@ -70,9 +78,11 @@ const CardDetailsModal = ({ open, onClose, ticket, onChanged, onOpenTicket }) =>
 
   useEffect(() => {
     if (open) {
+      setFull(null);
+      setFields([]);
       setNewName("");
       setNewValue("");
-      fetchFields();
+      loadAll();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, ticketId]);
@@ -114,7 +124,8 @@ const CardDetailsModal = ({ open, onClose, ticket, onChanged, onOpenTicket }) =>
       });
       setNewName("");
       setNewValue("");
-      await fetchFields();
+      const { data } = await api.get(`/ticket-custom-fields/${ticketId}`);
+      setFields(data || []);
       notify();
     } catch (err) {
       toastError(err);
@@ -125,40 +136,44 @@ const CardDetailsModal = ({ open, onClose, ticket, onChanged, onOpenTicket }) =>
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth scroll="paper">
-      <DialogTitle>{ticket.contact?.name || "Card"}</DialogTitle>
+      <DialogTitle>{t.contact?.name || "Detalhes do card"}</DialogTitle>
       <DialogContent dividers>
-        {/* Resumo */}
-        <div style={{ fontSize: "0.9rem" }}>
-          <Row label="Número">{ticket.contact?.number}</Row>
-          <Row label="Valor">
-            <b style={{ color: "#159F5B" }}>{formatBRL(ticket.value)}</b>
+        {/* Resumo completo */}
+        <Row label="Nome">{t.contact?.name || "—"}</Row>
+        <Row label="Número">{t.contact?.number || "—"}</Row>
+        {t.contact?.email ? <Row label="E-mail">{t.contact.email}</Row> : null}
+        <Row label="Valor">
+          <b style={{ color: "#159F5B" }}>{formatBRL(t.value)}</b>
+        </Row>
+        <Row label="Responsável">{t.user?.name || "Sem responsável"}</Row>
+        <Row label="Fila">{t.queue?.name || "—"}</Row>
+        <Row label="Canal">
+          {CHANNEL_LABEL[t.whatsapp?.channel] || t.whatsapp?.channel || "—"}
+        </Row>
+        <Row label="Status">{t.status || "—"}</Row>
+        <Row label="Criado em">{formatDate(t.createdAt)}</Row>
+        <Row label="Atualizado em">{formatDate(t.updatedAt)}</Row>
+        {t.lastMessage ? (
+          <Row label="Última mensagem">{t.lastMessage}</Row>
+        ) : null}
+        {(t.tags || []).length > 0 && (
+          <Row label="Tags">
+            {t.tags.map((tag) => (
+              <Chip
+                key={tag.id}
+                size="small"
+                label={tag.name}
+                style={{
+                  height: 20,
+                  marginRight: 4,
+                  marginBottom: 2,
+                  background: tag.color || "#999",
+                  color: "#fff",
+                }}
+              />
+            ))}
           </Row>
-          <Row label="Responsável">{ticket.user?.name || "Sem responsável"}</Row>
-          <Row label="Fila">{ticket.queue?.name || "—"}</Row>
-          <Row label="Canal">
-            {CHANNEL_LABEL[ticket.whatsapp?.channel] || ticket.whatsapp?.channel || "—"}
-          </Row>
-          {ticket.nextSchedule && (
-            <Row label="Agendamento">{formatSchedule(ticket.nextSchedule.sendAt)}</Row>
-          )}
-          {(ticket.tags || []).length > 0 && (
-            <Row label="Tags">
-              {ticket.tags.map((t) => (
-                <Chip
-                  key={t.id}
-                  size="small"
-                  label={t.name}
-                  style={{
-                    height: 20,
-                    marginRight: 4,
-                    background: t.color || "#999",
-                    color: "#fff",
-                  }}
-                />
-              ))}
-            </Row>
-          )}
-        </div>
+        )}
 
         <Divider style={{ margin: "14px 0" }} />
 
@@ -229,7 +244,10 @@ const CardDetailsModal = ({ open, onClose, ticket, onChanged, onOpenTicket }) =>
         </Button>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onOpenTicket && onOpenTicket(ticket.uuid)} color="primary">
+        <Button
+          onClick={() => onOpenTicket && onOpenTicket(t.uuid || ticket.uuid)}
+          color="primary"
+        >
           Abrir atendimento
         </Button>
         <Button onClick={onClose} color="secondary">

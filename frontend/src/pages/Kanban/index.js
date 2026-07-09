@@ -494,6 +494,17 @@ const Kanban = () => {
             </div>
           )}
 
+          <button
+            className={classes.button}
+            style={{ marginTop: 8, background: "#8863E6" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDetailsTicket(ticket);
+              setDetailsOpen(true);
+            }}
+          >
+            Ver detalhes
+          </button>
         </div>
       ),
       title: ticket.contact.name,
