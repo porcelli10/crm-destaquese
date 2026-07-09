@@ -21,6 +21,13 @@ kanbanCustomFieldRoutes.post(
   KanbanMoveController.moveViaApi
 );
 
+// API externa: puxa as informações do lead (id, coluna, número, nome).
+kanbanCustomFieldRoutes.get(
+  "/api/kanban/lead",
+  tokenAuth,
+  KanbanMoveController.getLeadViaApi
+);
+
 // Uso interno (painel): listar/editar/remover campos de um card.
 kanbanCustomFieldRoutes.get(
   "/ticket-custom-fields/:ticketId",

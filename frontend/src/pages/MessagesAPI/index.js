@@ -503,6 +503,27 @@ const MessagesAPI = () => {
           </Typography>
         </Grid>
       </Grid>
+
+      <Typography variant="h6" color="primary" className={classes.elementMargin}>
+        Consultar lead do pipeline (Kanban)
+      </Typography>
+      <Grid container>
+        <Grid item xs={12}>
+          <Typography className={classes.elementMargin} component="div">
+            <p>
+              Retorna os dados do lead (card): id do atendimento, coluna do
+              pipeline, número e nome. O lead é localizado pelo número do contato
+              (atendimento ativo) ou por <code>ticketId</code>.
+            </p>
+            <b>Endpoint: </b> {process.env.REACT_APP_BACKEND_URL + '/api/kanban/lead?number=5599999999999'} <br />
+            <b>{i18n.t('messagesAPI.labels.method2')}: </b> GET <br />
+            <b>Headers: </b> Authorization (Bearer + token da conexão) <br />
+            <b>Query: </b> <code>number</code> (ou <code>ticketId</code>) <br />
+            <b>Retorno: </b> {"{ \"id\": 123, \"column\": \"Agendamento\", \"number\": \"5599999999999\", \"name\": \"Fulano\" }"} <br />
+            <small><b>Token:</b> use o token da <b>conexão do WhatsApp</b> (menu Conexões). Não é o login do usuário.</small>
+          </Typography>
+        </Grid>
+      </Grid>
     </Paper>
   );
 };

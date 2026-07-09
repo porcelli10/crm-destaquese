@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import MoveKanbanCardService from "../services/TicketServices/MoveKanbanCardService";
+import GetKanbanLeadService from "../services/TicketServices/GetKanbanLeadService";
 
 /**
  * API externa (autenticada pelo token da CONEXÃO via tokenAuth): move um card
@@ -36,4 +37,30 @@ export const moveViaApi = async (
     ticketId: ticket.id,
     column: { id: target.id, name: target.name }
   });
+};
+
+/**
+ * API externa (token da CONEXÃO): puxa as informações do lead (card).
+ *
+ * GET /api/kanban/lead?number=... | ?ticketId=...
+ * headers: Authorization: Bearer <TOKEN DA CONEXÃO>
+ * retorna: { id, column, number, name }
+ */
+export const getLeadViaApi = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { whatsappId } = req.params as unknown as { whatsappId: number };
+  const { number, ticketId } = req.query as {
+    number?: string;
+    ticketId?: string;
+  };
+
+  const lead = await GetKanbanLeadService({
+    whatsappId,
+    number,
+    ticketId: ticketId ? Number(ticketId) : undefined
+  });
+
+  return res.status(200).json(lead);
 };
