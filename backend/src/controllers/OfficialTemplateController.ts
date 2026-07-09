@@ -62,7 +62,6 @@ export const connections = async (
       "id",
       "name",
       "channel",
-      "number",
       "officialPhoneNumberId",
       "officialApiVersion",
       "officialAccessToken"
@@ -71,13 +70,13 @@ export const connections = async (
 
   const result = await Promise.all(
     list.map(async (w: any) => {
-      // iasolution: não há Graph API; usa o número da própria conexão.
+      // iasolution: não há Graph API nem número armazenado; mostra só o nome.
       if (w.channel === "iasolution") {
         return {
           id: w.id,
           name: w.name,
           channel: w.channel,
-          displayPhoneNumber: w.number || null
+          displayPhoneNumber: null
         };
       }
 
