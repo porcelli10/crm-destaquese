@@ -16,6 +16,12 @@ officialTemplateRoutes.post(
   OfficialTemplateController.sendTo
 );
 
+officialTemplateRoutes.post(
+  "/official-templates/create",
+  isAuth,
+  OfficialTemplateController.create
+);
+
 officialTemplateRoutes.get(
   "/official-templates/:whatsappId",
   isAuth,

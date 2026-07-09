@@ -55,6 +55,40 @@ interface SendTemplateParams {
   components?: any[];
 }
 
+interface CreateTemplateParams {
+  whatsapp: Whatsapp;
+  name: string;
+  /** "UTILITY" | "MARKETING" | "AUTHENTICATION" */
+  category: string;
+  /** ex: pt_BR, en_US */
+  language: string;
+  /** componentes no formato da Meta (HEADER, BODY, FOOTER, BUTTONS) */
+  components: any[];
+}
+
+/**
+ * Cria um template na Meta (via Hub) e o salva localmente. O template nasce em
+ * status PENDING até a Meta aprovar. Para HEADER de mídia, o Hub aceita
+ * `example.header_url` e faz o upload automaticamente.
+ * POST /templates
+ */
+export const createIaSolutionTemplate = async ({
+  whatsapp,
+  name,
+  category,
+  language,
+  components
+}: CreateTemplateParams): Promise<any> => {
+  const client = buildClient(whatsapp);
+  const { data } = await client.post("/templates", {
+    name,
+    category,
+    language,
+    components
+  });
+  return data?.data || data;
+};
+
 /**
  * Normaliza um template do Hub para o mesmo formato que o CRM usa no canal
  * oficial: { name, status, language (string), category, components }.

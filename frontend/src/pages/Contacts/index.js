@@ -24,6 +24,7 @@ import api from "../../services/api";
 import TableRowSkeleton from "../../components/TableRowSkeleton";
 import ContactModal from "../../components/ContactModal";
 import SendTemplateModal from "../../components/SendTemplateModal";
+import CreateTemplateModal from "../../components/CreateTemplateModal";
 import ConfirmationModal from "../../components/ConfirmationModal/";
 
 import { i18n } from "../../translate/i18n";
@@ -106,6 +107,7 @@ const Contacts = () => {
   const [selectedContactId, setSelectedContactId] = useState(null);
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [sendTemplateOpen, setSendTemplateOpen] = useState(false);
+  const [createTemplateOpen, setCreateTemplateOpen] = useState(false);
   const [templateNumber, setTemplateNumber] = useState("");
   const [newTicketModalOpen, setNewTicketModalOpen] = useState(false);
   const [contactTicket, setContactTicket] = useState({});
@@ -261,6 +263,10 @@ const Contacts = () => {
         onClose={() => setSendTemplateOpen(false)}
         initialNumber={templateNumber}
       />
+      <CreateTemplateModal
+        open={createTemplateOpen}
+        onClose={() => setCreateTemplateOpen(false)}
+      />
       <ContactModal
         open={contactModalOpen}
         onClose={handleCloseContactModal}
@@ -333,6 +339,13 @@ const Contacts = () => {
             }}
           >
             Enviar Template
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setCreateTemplateOpen(true)}
+          >
+            Criar Template
           </Button>
          <CSVLink style={{ textDecoration:'none'}} separator=";" filename={'contatos.csv'} data={contacts.map((contact) => ({ name: contact.name, number: contact.number, email: contact.email }))}>
           <Button	variant="contained" color="primary"> 

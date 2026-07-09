@@ -9,7 +9,8 @@ import { listOfficialTemplates } from "../services/WABAServices/whatsappOfficial
 import SendTemplateMessageIaSolution from "../services/IaSolutionServices/SendTemplateMessageIaSolution";
 import {
   listIaSolutionTemplates,
-  syncIaSolutionTemplates
+  syncIaSolutionTemplates,
+  createIaSolutionTemplate
 } from "../services/IaSolutionServices/iaSolutionApi";
 import CreateOrUpdateContactService from "../services/ContactServices/CreateOrUpdateContactService";
 import FindOrCreateTicketService from "../services/TicketServices/FindOrCreateTicketService";
@@ -135,6 +136,57 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
       err?.response?.data?.error?.message ||
         err?.response?.data?.message ||
         "Não foi possível carregar os templates"
+    );
+  }
+};
+
+/**
+ * Cria um novo template na conexão (apenas iaSolution: o Hub cria na Meta e já
+ * sincroniza localmente). O template nasce PENDING até a aprovação da Meta.
+ * POST /official-templates/create
+ * body: { whatsappId, name, category, language, components }
+ */
+export const create = async (req: Request, res: Response): Promise<Response> => {
+  const { companyId } = req.user;
+  const { whatsappId, name, category, language, components } = req.body;
+
+  if (!whatsappId || !name || !category || !language || !components?.length) {
+    throw new AppError(
+      "whatsappId, name, category, language e components são obrigatórios",
+      400
+    );
+  }
+
+  const whatsapp = await Whatsapp.findByPk(whatsappId);
+
+  if (!whatsapp || whatsapp.companyId !== companyId) {
+    throw new AppError("ERR_NO_WAPP_FOUND", 404);
+  }
+
+  if (whatsapp.channel !== "iasolution") {
+    throw new AppError(
+      "Criação de template pelo painel disponível apenas para conexões iaSolution. Para o canal oficial, use o Gerenciador da Meta.",
+      400
+    );
+  }
+
+  try {
+    const template = await createIaSolutionTemplate({
+      whatsapp,
+      name,
+      category,
+      language,
+      components
+    });
+    return res.json({
+      message: "Template criado. Aguarde a aprovação da Meta.",
+      template
+    });
+  } catch (err: any) {
+    throw new AppError(
+      err?.response?.data?.error?.message ||
+        err?.response?.data?.message ||
+        "Não foi possível criar o template"
     );
   }
 };
