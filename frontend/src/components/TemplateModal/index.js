@@ -69,9 +69,10 @@ const TemplateModal = ({ open, onClose, ticketId }) => {
         const { data: ticket } = await api.get(`/tickets/${ticketId}`);
         const whatsappId = ticket?.whatsappId;
 
-        if (ticket?.whatsapp?.channel !== "official") {
+        const TEMPLATE_CHANNELS = ["official", "iasolution"];
+        if (!TEMPLATE_CHANNELS.includes(ticket?.whatsapp?.channel)) {
           setError(
-            "Templates estão disponíveis apenas para conexões WhatsApp API Oficial."
+            "Templates estão disponíveis apenas para conexões WhatsApp API Oficial ou iaSolution."
           );
           return;
         }
@@ -108,7 +109,7 @@ const TemplateModal = ({ open, onClose, ticketId }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth scroll="paper">
-      <DialogTitle>Enviar template (WhatsApp Oficial)</DialogTitle>
+      <DialogTitle>Enviar template</DialogTitle>
       <DialogContent dividers>
         {loading ? (
           <div className={classes.loadingBox}>
@@ -118,7 +119,7 @@ const TemplateModal = ({ open, onClose, ticketId }) => {
           <Typography className={classes.empty}>{error}</Typography>
         ) : templates.length === 0 ? (
           <Typography className={classes.empty}>
-            Nenhum template aprovado encontrado na sua conta da Meta.
+            Nenhum template aprovado encontrado para esta conexão.
           </Typography>
         ) : (
           templates.map((template) => (

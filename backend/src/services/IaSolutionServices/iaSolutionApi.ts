@@ -46,6 +46,69 @@ export const sendIaSolutionText = async ({
   return data?.data?.message_id;
 };
 
+interface SendTemplateParams {
+  whatsapp: Whatsapp;
+  to: string;
+  templateName: string;
+  languageCode: string;
+  /** componentes opcionais (variáveis de header/body/botões) */
+  components?: any[];
+}
+
+/**
+ * Normaliza um template do Hub para o mesmo formato que o CRM usa no canal
+ * oficial: { name, status, language (string), category, components }.
+ * O Hub sincroniza os templates da Meta, então já vêm nesse formato; ainda
+ * assim garantimos `language` como string (aceita string ou { code }).
+ */
+const normalizeTemplate = (t: any) => ({
+  name: t?.name,
+  status: (t?.status || "").toString().toUpperCase(),
+  language:
+    typeof t?.language === "object" ? t?.language?.code : t?.language,
+  category: t?.category,
+  components: t?.components || []
+});
+
+/**
+ * Lista os message templates do canal (via Hub). Retorna no formato do CRM.
+ * GET /templates -> { success, data: { templates: [...] } }
+ */
+export const listIaSolutionTemplates = async (
+  whatsapp: Whatsapp
+): Promise<any[]> => {
+  const client = buildClient(whatsapp);
+  const { data } = await client.get("/templates");
+  const templates = data?.data?.templates || [];
+  return templates.map(normalizeTemplate);
+};
+
+/**
+ * Envia uma mensagem de template aprovado. Único tipo que pode iniciar conversa
+ * fora da janela de 24h. Retorna o message_id (wamid).
+ * POST /messages/template
+ */
+export const sendIaSolutionTemplate = async ({
+  whatsapp,
+  to,
+  templateName,
+  languageCode,
+  components
+}: SendTemplateParams): Promise<string> => {
+  const client = buildClient(whatsapp);
+
+  const template: any = {
+    name: templateName,
+    language: { code: languageCode }
+  };
+  if (components && components.length) {
+    template.components = components;
+  }
+
+  const { data } = await client.post("/messages/template", { to, template });
+  return data?.data?.message_id;
+};
+
 interface SendMediaParams {
   whatsapp: Whatsapp;
   to: string;

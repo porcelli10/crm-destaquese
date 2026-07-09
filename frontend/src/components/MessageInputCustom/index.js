@@ -749,7 +749,7 @@ const MessageInputCustom = (props) => {
             component="span"
             disabled={loading || ticketStatus !== "open"}
             onClick={() => setTemplateModalOpen(true)}
-            title="Enviar template (WhatsApp Oficial)"
+            title="Enviar template"
           >
             <DescriptionOutlinedIcon className={classes.sendMessageIcons} />
           </IconButton>

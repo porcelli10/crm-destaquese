@@ -1,12 +1,46 @@
 import { Request, Response } from "express";
+import { Op } from "sequelize";
 import axios from "axios";
 import AppError from "../errors/AppError";
 import Whatsapp from "../models/Whatsapp";
 import ShowTicketService from "../services/TicketServices/ShowTicketService";
 import SendTemplateMessageOfficial from "../services/WABAServices/SendTemplateMessageOfficial";
 import { listOfficialTemplates } from "../services/WABAServices/whatsappOfficialApi";
+import SendTemplateMessageIaSolution from "../services/IaSolutionServices/SendTemplateMessageIaSolution";
+import { listIaSolutionTemplates } from "../services/IaSolutionServices/iaSolutionApi";
 import CreateOrUpdateContactService from "../services/ContactServices/CreateOrUpdateContactService";
 import FindOrCreateTicketService from "../services/TicketServices/FindOrCreateTicketService";
+
+// Canais que suportam envio de message templates.
+const TEMPLATE_CHANNELS = ["official", "iasolution"];
+
+/**
+ * Lista os templates de uma conexão de acordo com o canal (official via Graph
+ * API da Meta; iasolution via Hub). Retorna sempre no formato do CRM.
+ */
+const listTemplatesByChannel = async (whatsapp: Whatsapp): Promise<any[]> => {
+  if (whatsapp.channel === "iasolution") {
+    return listIaSolutionTemplates(whatsapp);
+  }
+  return listOfficialTemplates(whatsapp);
+};
+
+/**
+ * Envia um template pelo serviço correto conforme o canal do ticket.
+ */
+const sendTemplateByChannel = async (params: {
+  ticket: any;
+  templateName: string;
+  languageCode: string;
+  components?: any[];
+  previewBody?: string;
+}): Promise<void> => {
+  if (params.ticket.whatsapp?.channel === "iasolution") {
+    await SendTemplateMessageIaSolution(params);
+    return;
+  }
+  await SendTemplateMessageOfficial(params);
+};
 
 /**
  * Lista as conexões oficiais da empresa já com o número de telefone real
@@ -20,10 +54,12 @@ export const connections = async (
   const { companyId } = req.user;
 
   const list = await Whatsapp.findAll({
-    where: { companyId, channel: "official" },
+    where: { companyId, channel: { [Op.in]: TEMPLATE_CHANNELS } },
     attributes: [
       "id",
       "name",
+      "channel",
+      "number",
       "officialPhoneNumberId",
       "officialApiVersion",
       "officialAccessToken"
@@ -32,6 +68,16 @@ export const connections = async (
 
   const result = await Promise.all(
     list.map(async (w: any) => {
+      // iasolution: não há Graph API; usa o número da própria conexão.
+      if (w.channel === "iasolution") {
+        return {
+          id: w.id,
+          name: w.name,
+          channel: w.channel,
+          displayPhoneNumber: w.number || null
+        };
+      }
+
       let displayPhoneNumber: string | null = null;
       try {
         const ver = w.officialApiVersion || "v21.0";
@@ -47,7 +93,12 @@ export const connections = async (
       } catch (err) {
         // token pode estar expirado; cai no fallback (sem número)
       }
-      return { id: w.id, name: w.name, displayPhoneNumber };
+      return {
+        id: w.id,
+        name: w.name,
+        channel: w.channel,
+        displayPhoneNumber
+      };
     })
   );
 
@@ -68,19 +119,20 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
     throw new AppError("ERR_NO_WAPP_FOUND", 404);
   }
 
-  if (whatsapp.channel !== "official") {
-    throw new AppError("Conexão não é do tipo WhatsApp API Oficial", 400);
+  if (!TEMPLATE_CHANNELS.includes(whatsapp.channel)) {
+    throw new AppError("Conexão não suporta envio de templates", 400);
   }
 
   try {
-    const templates = await listOfficialTemplates(whatsapp);
+    const templates = await listTemplatesByChannel(whatsapp);
     // só faz sentido enviar os aprovados
     const approved = templates.filter((t: any) => t.status === "APPROVED");
     return res.json(approved);
   } catch (err: any) {
     throw new AppError(
       err?.response?.data?.error?.message ||
-        "Não foi possível carregar os templates da Meta"
+        err?.response?.data?.message ||
+        "Não foi possível carregar os templates"
     );
   }
 };
@@ -101,11 +153,14 @@ export const send = async (req: Request, res: Response): Promise<Response> => {
 
   const ticket = await ShowTicketService(ticketId, companyId);
 
-  if (ticket.whatsapp?.channel !== "official") {
-    throw new AppError("O atendimento não é de uma conexão oficial", 400);
+  if (!TEMPLATE_CHANNELS.includes(ticket.whatsapp?.channel)) {
+    throw new AppError(
+      "O atendimento não é de uma conexão que suporta templates",
+      400
+    );
   }
 
-  await SendTemplateMessageOfficial({
+  await sendTemplateByChannel({
     ticket,
     templateName,
     languageCode,
@@ -146,8 +201,8 @@ export const sendTo = async (req: Request, res: Response): Promise<Response> => 
     throw new AppError("ERR_NO_WAPP_FOUND", 404);
   }
 
-  if (whatsapp.channel !== "official") {
-    throw new AppError("Conexão não é do tipo WhatsApp API Oficial", 400);
+  if (!TEMPLATE_CHANNELS.includes(whatsapp.channel)) {
+    throw new AppError("Conexão não suporta envio de templates", 400);
   }
 
   const cleanNumber = String(number).replace(/\D/g, "");
@@ -170,7 +225,7 @@ export const sendTo = async (req: Request, res: Response): Promise<Response> => 
   // recarrega com as associações (contact, channel) para o envio
   const ticket = await ShowTicketService(ticketBase.id, companyId);
 
-  await SendTemplateMessageOfficial({
+  await sendTemplateByChannel({
     ticket,
     templateName,
     languageCode,

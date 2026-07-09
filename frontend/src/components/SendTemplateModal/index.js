@@ -125,7 +125,7 @@ const SendTemplateModal = ({ open, onClose, initialNumber }) => {
           >
             {connections.length === 0 && (
               <MenuItem value="" disabled>
-                Nenhuma conexão oficial encontrada
+                Nenhuma conexão com suporte a templates
               </MenuItem>
             )}
             {connections.map((conn) => (
