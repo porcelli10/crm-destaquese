@@ -1,4 +1,7 @@
 import { Request, Response } from "express";
+import AppError from "../errors/AppError";
+import Ticket from "../models/Ticket";
+import TicketCustomField from "../models/TicketCustomField";
 import SetTicketCustomFieldsService from "../services/TicketServices/SetTicketCustomFieldsService";
 
 /**
@@ -35,4 +38,64 @@ export const setViaApi = async (
     ticketId: ticket.id,
     fields: saved.map(f => ({ id: f.id, name: f.name, value: f.value }))
   });
+};
+
+// GET /ticket-custom-fields/:ticketId  (isAuth) — lista os campos de um card
+export const index = async (req: Request, res: Response): Promise<Response> => {
+  const { companyId } = req.user;
+  const { ticketId } = req.params;
+
+  const fields = await TicketCustomField.findAll({
+    where: { ticketId, companyId },
+    order: [["id", "ASC"]]
+  });
+
+  return res.json(fields);
+};
+
+// POST /ticket-custom-fields/:ticketId  (isAuth) — cria/atualiza um campo
+export const upsert = async (req: Request, res: Response): Promise<Response> => {
+  const { companyId } = req.user;
+  const { ticketId } = req.params;
+  const { name, value } = req.body as { name: string; value: string };
+
+  if (!name || !name.trim()) {
+    throw new AppError("O nome do campo é obrigatório", 400);
+  }
+
+  const ticket = await Ticket.findOne({ where: { id: ticketId, companyId } });
+  if (!ticket) {
+    throw new AppError("Atendimento não encontrado", 404);
+  }
+
+  const [record] = await TicketCustomField.findOrCreate({
+    where: { ticketId: Number(ticketId), name: name.trim() },
+    defaults: {
+      ticketId: Number(ticketId),
+      companyId,
+      name: name.trim(),
+      value: value ?? ""
+    } as any
+  });
+
+  if (record.value !== value) {
+    await record.update({ value: value ?? "" });
+  }
+
+  return res.status(200).json(record);
+};
+
+// DELETE /ticket-custom-fields/:id  (isAuth) — remove um campo
+export const remove = async (req: Request, res: Response): Promise<Response> => {
+  const { companyId } = req.user;
+  const { id } = req.params;
+
+  const record = await TicketCustomField.findOne({ where: { id, companyId } });
+  if (!record) {
+    throw new AppError("Campo não encontrado", 404);
+  }
+
+  await record.destroy();
+
+  return res.json({ message: "Campo removido" });
 };

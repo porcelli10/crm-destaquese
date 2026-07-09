@@ -459,6 +459,28 @@ const MessagesAPI = () => {
           {renderFormAddTag()}
         </Grid>
       </Grid>
+
+      <Typography variant="h6" color="primary" className={classes.elementMargin}>
+        Campos personalizados do card (Kanban)
+      </Typography>
+      <Grid container>
+        <Grid item xs={12}>
+          <Typography className={classes.elementMargin} component="div">
+            <p>
+              Preenche campos personalizados no card do Kanban (ex.: valor do
+              negócio, origem, vendedor). O card é identificado pelo número do
+              contato (atendimento ativo) ou por <code>ticketId</code>. É
+              <b> upsert por nome</b>: reenviar o mesmo campo atualiza o valor.
+            </p>
+            <b>Endpoint: </b> {process.env.REACT_APP_BACKEND_URL + '/api/kanban/custom-fields'} <br />
+            <b>{i18n.t('messagesAPI.labels.method2')}: </b> POST <br />
+            <b>Headers: </b> Authorization (Bearer + token da conexão) {i18n.t('messagesAPI.labels.e')} Content-Type (application/json) <br />
+            <b>Body (objeto): </b> {"{ \"number\": \"5599999999999\", \"fields\": { \"Valor\": \"R$ 1.500\", \"Origem\": \"Instagram\" } }"} <br />
+            <b>Body (array): </b> {"{ \"ticketId\": 123, \"fields\": [ { \"name\": \"Valor\", \"value\": \"R$ 1.500\" } ] }"} <br />
+            <small><b>Token:</b> use o token da <b>conexão do WhatsApp</b> (menu Conexões). Não é o login do usuário.</small>
+          </Typography>
+        </Grid>
+      </Grid>
     </Paper>
   );
 };

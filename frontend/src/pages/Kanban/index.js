@@ -26,6 +26,7 @@ import ViewColumnOutlinedIcon from "@material-ui/icons/ViewColumnOutlined";
 import PersonAddOutlinedIcon from "@material-ui/icons/PersonAddOutlined";
 import TuneOutlinedIcon from "@material-ui/icons/TuneOutlined";
 import KanbanAutomationsModal from "../../components/KanbanAutomationsModal";
+import TicketCustomFieldsModal from "../../components/TicketCustomFieldsModal";
 import EventOutlinedIcon from "@material-ui/icons/EventOutlined";
 import PersonOutlineOutlinedIcon from "@material-ui/icons/PersonOutlineOutlined";
 import AccessTimeOutlinedIcon from "@material-ui/icons/AccessTimeOutlined";
@@ -145,6 +146,10 @@ const Kanban = () => {
   // Automações por coluna
   const [automationsOpen, setAutomationsOpen] = useState(false);
   const [automationsTag, setAutomationsTag] = useState({ id: null, name: "" });
+
+  // Campos personalizados do card
+  const [customFieldsOpen, setCustomFieldsOpen] = useState(false);
+  const [customFieldsTicket, setCustomFieldsTicket] = useState({ id: null, name: "" });
 
   // header customizado da coluna precisa sempre do handler mais recente
   const openAutomationsRef = useRef(() => {});
@@ -353,6 +358,16 @@ const Kanban = () => {
           >
             {i18n.t("kanban.seeTicket")}
           </button>
+          <button
+            className={classes.button}
+            style={{ marginTop: 8, marginLeft: 6, background: "#8863E6" }}
+            onClick={() => {
+              setCustomFieldsTicket({ id: ticket.id, name: ticket.contact.name });
+              setCustomFieldsOpen(true);
+            }}
+          >
+            Campos
+          </button>
         </div>
       ),
       title: ticket.contact.name,
@@ -560,6 +575,15 @@ const Kanban = () => {
         tagId={automationsTag.id}
         tagName={automationsTag.name}
         tags={tags}
+      />
+
+      {/* Dialog: Campos personalizados do card */}
+      <TicketCustomFieldsModal
+        open={customFieldsOpen}
+        onClose={() => setCustomFieldsOpen(false)}
+        ticketId={customFieldsTicket.id}
+        ticketName={customFieldsTicket.name}
+        onSaved={() => fetchTickets(jsonString)}
       />
 
       {/* Dialog: Configurar aparência do card */}
