@@ -368,6 +368,7 @@ const messages = {
 					schedules: "Business Hours",
 				},
 				form: {
+					channel: "Connection type",
 					name: "Name",
 					default: "Default",
 					sendIdQueue: "Queue",

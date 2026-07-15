@@ -375,6 +375,7 @@ const messages = {
           schedules: "Horário de expediente",
         },
         form: {
+          channel: "Tipo de conexão",
           name: "Nome",
           default: "Padrão",
           sendIdQueue: "Fila",

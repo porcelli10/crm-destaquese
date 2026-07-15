@@ -369,6 +369,7 @@ const messages = {
           schedules: "Horario laboral",
         },
         form: {
+          channel: "Tipo de conexión",
           name: "Nombre",
           default: "Predeterminado",
           sendIdQueue: "Cola",
